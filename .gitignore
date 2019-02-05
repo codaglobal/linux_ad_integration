@@ -1,0 +1,15 @@
+.terraform
+terraform.tfsta*
+credentials
+*_credentials
+.DS_Store
+.kitchen
+*.pem
+*.pub
+*.tfstate
+kubeconfig_*
+config-map-aws-auth-*
+.vscode
+admin_config_*
+setup_config_*
+k8s-objects/test_poc_kubeconfig
