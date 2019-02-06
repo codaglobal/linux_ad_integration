@@ -1,0 +1,15 @@
+# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
+---
+# Setup Netplan on the system
+
+- name: "Setting netplan config - /etc/netplan/10000-{{ netbios }}-netplan.yaml"
+  become: yes
+  become_user: root
+  template:
+    src: ../templates/netplan.yaml.j2
+    dest: "/etc/netplan/10000-{{ netbios }}-netplan.yaml"
+    owner: root
+    mode: 0644
+
+- name: Apply netplan
+  raw: netplan apply

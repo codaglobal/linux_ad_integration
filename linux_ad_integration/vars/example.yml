@@ -1,0 +1,24 @@
+variable1: value
+
+variable2: value
+
+variable_list:
+  - item1
+  - item2
+  - item3
+
+variable_dict:
+  key1: value1
+  key2: value2
+
+variable_list_of_dictionaries:
+  - key1a: value1a
+    key1b: value1b
+  - key2a: value2a
+    key2b: value2b
+
+variable_list_of_lists:
+  - - List 1 Item 1
+    - List 1 Item 2
+  - - List 2 Item 1
+    - List 2 Item 2

@@ -1,0 +1,15 @@
+---
+- hosts: "tag_Name_ehe_management_{{ hostname }}"
+  become: true
+  become_method: sudo
+  gather_facts: yes
+  vars:
+    ansible_user: ubuntu
+  pre_tasks:
+    - name: Install min python if needed
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: false
+    - debug: var=ansible_default_ipv4.interface
+
+  roles:
+    - { role: "{{ playbook_dir }}/.." }

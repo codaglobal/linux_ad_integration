@@ -1,0 +1,5 @@
+{% if routes_to_add is defined %}
+{% for route_to_add in routes_to_add %}
+push "route {{ route_to_add.ip }} {{ route_to_add.netmask }}"
+{% endfor %}
+{% endif %}

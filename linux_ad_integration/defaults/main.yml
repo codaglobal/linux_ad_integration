@@ -1,0 +1,38 @@
+---
+# defaults file for linux_ad_integration
+# Global
+hostname: "bastion"
+ldap_host: "caldc03"
+ldap_domain: "ehe.exechealthgroup.com"
+ldap_server_ip: "192.168.0.200"
+pdc_host: "ehenydc01"
+pdc_domain: "ehe.exechealthgroup.com"
+pdc_server_ip: "192.168.0.206"
+netbios: "EHE"
+kerberos_host: "{{ pdc_host }}"
+kerberos_realm: "{{ pdc_domain }}"
+kerberos_server_ip: "{{ pdc_server_ip }}"
+rfc_version: "rfc2307"
+
+# Default packages to be installed
+newpackages:
+  - ntp
+  - ntpdate
+  - winbind
+  - samba
+  - libnss-winbind
+  - libpam-winbind
+  - krb5-config
+  - krb5-locales
+  - krb5-user
+
+# defaults for netplan-networking
+netplan_interface: "{{ ansible_default_ipv4.interface }}"
+netplan_configured: true
+netplan_ip: "{{ ansible_default_ipv4.address }}"
+netplan_mac: "{{ ansible_default_ipv4.macaddress }}"
+netplan_ns1: "{{ ldap_server_ip }}"
+netplan_ns2: "{{ pdc_server_ip }}"
+netplan_ns3: "127.0.0.53"
+netplan_dns1: "{{ ldap_domain }}"
+netplan_dns2: "ec2.internal"

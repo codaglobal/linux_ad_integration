@@ -13,3 +13,4 @@ config-map-aws-auth-*
 admin_config_*
 setup_config_*
 k8s-objects/test_poc_kubeconfig
+notes/*

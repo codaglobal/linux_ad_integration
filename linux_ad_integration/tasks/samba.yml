@@ -1,0 +1,22 @@
+# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
+---
+# Setup SAMBA on the system
+
+- name: "Setting Samba config - /etc/samba/smb.conf"
+  become: yes
+  become_user: root
+  template:
+    src: ../templates/smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    mode: 0644
+
+- name: Restart service smbd, in all cases
+  service:
+    name: smbd
+    state: restarted
+
+- name: Restart service nmbd, in all cases
+  service:
+    name: nmbd
+    state: restarted

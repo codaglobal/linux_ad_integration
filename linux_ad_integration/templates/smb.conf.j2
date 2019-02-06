@@ -1,0 +1,23 @@
+# GLOBAL PARAMETERS
+[global]
+        workgroup = {{ netbios|upper }}
+        realm = {{ ldap_domain|upper }}
+        netbios name = {{ hostname }}
+        security = ADS
+        dns forwarder = {{ pdc_server_ip }}
+
+idmap config * : backend = tdb
+idmap config *:range = 50000-1000000
+username map: /usr/local/samba/etc/user.map
+
+   template homedir = /home/%D/%U
+   template shell = /bin/bash
+   winbind use default domain = true
+   winbind offline logon = false
+   winbind nss info = {{ rfc_version }}
+   winbind enum users = yes
+   winbind enum groups = yes
+
+  vfs objects = acl_xattr
+  map acl inherit = Yes
+  store dos attributes = Yes

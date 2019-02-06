@@ -1,0 +1,6 @@
+---
+# handlers file for linux_ad_integration
+# monitors items in code
+# if <something> then <invoke handler>
+# give it a task name - matches handler to name
+# example: handler - restart smbd service (or ntp or nmbd or....)

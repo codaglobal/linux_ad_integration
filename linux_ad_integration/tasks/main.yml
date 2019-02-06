@@ -1,0 +1,26 @@
+# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
+---
+# Configure a new system for Active Directory installation
+- name: Upgrade all packages to the latest version
+  import_tasks: apt-upgrade.yml
+
+- name: Install all required packages
+  import_tasks: pkg-install.yml
+
+- name: fill out the /etc/hosts file
+  import_tasks: etc-hosts.yml
+
+- name: Configure NTP
+  import_tasks: ntp.yml
+
+- name: Configure Netplan
+  import_tasks: netplan.yml
+
+- name: Configure Kerberos5
+  import_tasks: krb5.yml
+
+- name: Configure Samba
+  import_tasks: samba.yml
+
+- name: Add winbind to nsswitch
+  import_tasks: nsswitch.yml
