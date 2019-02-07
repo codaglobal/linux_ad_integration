@@ -5,12 +5,5 @@
     backup=True
     backrefs=True
     state=present
-    regexp='^(passwd.*(?<!winbind))$'
-    line='\1 winbind'
-  lineinfile:
-    dest=/etc/nsswitch.conf
-    backup=True
-    backrefs=True
-    state=present
-    regexp='^(group.*(?<!winbind))$'
-    line='\1 winbind'
+    regexp='^(passwd.*(?<!winbind))$\n^(group.*(?<!winbind))$'
+    line='\1 winbind\2 winbind'
