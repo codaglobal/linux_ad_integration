@@ -1,12 +1,9 @@
-# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
 ---
-# Setup Kerberos on the system
-
-- name: Setting krb5 config - /etc/krb5.conf
+- name: Setting krb5 config at /etc/krb5.conf
   become: yes
   become_user: root
   template:
-    src: ../templates/krb5.conf.j2
+    src: krb5.conf.j2
     dest: /etc/krb5.conf
     owner: root
     mode: 0644

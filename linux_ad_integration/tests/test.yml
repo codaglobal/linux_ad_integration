@@ -9,7 +9,10 @@
     - name: Install min python if needed
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       changed_when: false
-    - debug: var=ansible_default_ipv4.interface
+    - name: "Display all variables/facts known for {{ hostname }}"
+      debug:
+        var: hostvars[inventory_hostname]
+        verbosity: 4
 
   roles:
     - { role: "{{ playbook_dir }}/.." }

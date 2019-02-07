@@ -1,17 +1,18 @@
-# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
----
-# Setup NTP on the system
+--- # Setup NTP on the system
+
+- name: Enable and start the ntp service
+  service:
+    name: ntp
+    enabled: yes
+    state: started
 
 - name: "Setting NTP config - /etc/ntp.conf"
   become: yes
   become_user: root
   template:
-    src: ../templates/ntp.conf.j2
+    src: ntp.conf.j2
     dest: /etc/ntp.conf
     owner: root
     mode: 0644
-
-- name: Restart service ntp, in all cases
-  service:
-    name: ntp
-    state: restarted
+  notify:
+    - restart ntp

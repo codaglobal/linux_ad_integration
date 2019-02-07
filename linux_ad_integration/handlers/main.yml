@@ -4,3 +4,31 @@
 # if <something> then <invoke handler>
 # give it a task name - matches handler to name
 # example: handler - restart smbd service (or ntp or nmbd or....)
+
+- name: restart ntp
+  service:
+    name: ntp
+    state: restarted
+
+- name: restart smbd
+  service:
+    name: smbd
+    state: restarted
+
+- name: restart nmbd
+  service:
+    name: nmbd
+    state: restarted
+
+- name: restart winbind
+  service:
+    name: winbind
+    state: restarted
+
+- name: restart ssh
+  service:
+    name: ssh
+    state: restarted
+
+- name: netplan apply
+  raw: netplan apply

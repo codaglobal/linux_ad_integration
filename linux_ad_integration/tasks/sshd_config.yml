@@ -1,0 +1,11 @@
+---
+- name: Enable SSH PasswordAuthentication
+  lineinfile:
+    dest=/etc/ssh/sshd_config
+    backup=True
+    backrefs=True
+    state=present
+    regexp='^(PasswordAuthentication no)$'
+    line='# PasswordAuthentication no'
+  notify:
+    - restart ssh

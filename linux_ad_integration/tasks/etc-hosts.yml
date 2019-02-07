@@ -1,12 +1,10 @@
-# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
 ---
-# Configure /etc/hosts on the target system
-- name: Fill out the /etc/hosts file
+- name: Append servers to /etc/hosts
   become: yes
   lineinfile:
     dest: /etc/hosts
     regexp: "^{{ item['ip'] }}.*$"
-    line: "{{ item['ip'] }}\t\t{{ item['names'] | join(' ') }}"
+    line: "{{ item.ip }}\t\t{{ item['names'] | join(' ') }}"
     state: present
   with_items:
   - ip: "{{ ansible_default_ipv4.address }}"

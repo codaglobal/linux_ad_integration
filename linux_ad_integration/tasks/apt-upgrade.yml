@@ -1,9 +1,0 @@
-# License Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0.html).
----
-- name: Upgrade all packages to the latest version
-  become_user: root
-  apt:
-    name: "*"
-    state: latest
-    update_cache: yes
-    force_apt_get: True
