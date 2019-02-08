@@ -22,3 +22,6 @@
 
 - name: Enable SSH PasswordAuthentication
   import_tasks: sshd_config.yml
+
+- name: Join Active Directory domain
+  import_tasks: join-active-directory.yml

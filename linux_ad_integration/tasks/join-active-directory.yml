@@ -1,0 +1,36 @@
+---
+- name: "Test the network"
+  shell: "nslookup {{ pdc_domain }}"
+  register: domain_check
+
+- name: "Apply netplan"
+  shell: "netplan apply"
+  when:
+    - domain_check is failed
+
+- name: "Test for domain membership"
+  shell: wbinfo -t
+  register: membership_check
+  ignore_errors: true
+
+- name: Generate a Kerberos Key
+  shell: |
+    echo -n '{{ admin_password }}' | kinit {{ admin_user }}
+  when:
+    - membership_check is failed
+  no_log: True
+
+- name: "List the Kerberos Credentials for {{ admin_user }}"
+  command: klist -c
+  when:
+    - membership_check is failed
+
+- name: Join the Active Directory
+  command: net ads join -k
+  when:
+    - membership_check is failed
+  notify:
+    - restart smbd
+    - restart nmbd
+    - restart winbind
+    - restart ssh

@@ -3,9 +3,8 @@
   lineinfile:
     dest=/etc/ssh/sshd_config
     backup=True
-    backrefs=True
     state=present
-    regexp='^(PasswordAuthentication no)$'
+    regexp='PasswordAuthentication no'
     line='# PasswordAuthentication no'
   notify:
     - restart ssh

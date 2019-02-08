@@ -1,10 +1,4 @@
 ---
-# handlers file for linux_ad_integration
-# monitors items in code
-# if <something> then <invoke handler>
-# give it a task name - matches handler to name
-# example: handler - restart smbd service (or ntp or nmbd or....)
-
 - name: restart ntp
   service:
     name: ntp
@@ -30,5 +24,5 @@
     name: ssh
     state: restarted
 
-- name: netplan apply
-  raw: netplan apply
+- name: restart netplan
+  command: netplan apply

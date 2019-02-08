@@ -1,15 +1,10 @@
 ---
-- name: Print netplan filename
-  debug:
-    msg: "Place a netplan config file at /etc/netplan/10000-{{ netbios }}-netplan.yaml"
-
-- name: Add Netplan rules
+- name: "Add Netplan rules at /etc/netplan/500-{{ netbios }}-netplan.yaml"
   become: yes
   become_user: root
   template:
     src: netplan.yaml.j2
-    dest: "/etc/netplan/10000-{{ netbios }}-netplan.yaml"
+    dest: "/etc/netplan/500-{{ netbios }}-netplan.yaml"
     owner: root
     mode: 0644
-  notify:
-    - netplan apply
+  notify: restart netplan

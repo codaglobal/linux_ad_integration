@@ -12,6 +12,7 @@ netbios: "EHE"
 kerberos_host: "{{ pdc_host }}"
 kerberos_realm: "{{ pdc_domain }}"
 kerberos_server_ip: "{{ pdc_server_ip }}"
+admin_user: "join"
 rfc_version: "rfc2307"
 
 # Default packages to be installed
@@ -25,6 +26,7 @@ newpackages:
   - krb5-config
   - krb5-locales
   - krb5-user
+  - python-pexpect
 
 # defaults for netplan-networking
 netplan_interface: "{{ ansible_default_ipv4.interface }}"
