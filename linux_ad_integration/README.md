@@ -1,7 +1,7 @@
 linux_ad_integration
 =========
 
-This role automates the integration of a standalone Linux server into any Active Directory. It also adds passthrough authentication to SSH, based on Active Directory user groups.
+This role automates the integration of a standalone Ubuntu server into any Active Directory. It also adds passthrough authentication to SSH, based on Active Directory user groups.
 
 Requirements
 ------------
@@ -11,7 +11,7 @@ Ansible dynamic inventory plugins are required as described in https://docs.ansi
 Role Variables
 --------------
 
-Though a work in progress, these variables are currently in use by the role:
+These required variables are currently in use by the role:
 
 GLOBAL:
 
@@ -23,20 +23,30 @@ ldap_domain: Domain suffix of the Active Directory LDAP server.
     Default: "ehe.exechealthgroup.com"
 ldap_server_ip: IP address of the Active Direcectory LDAP server.
     Default: "192.168.0.200"
-pdc_host: Hostname of the Active Directory primary domain controller.
+pdc1_host: Hostname of the Active Directory primary domain controller.
     Default: "ehenydc01"
-pdc_domain: Domain name suffix of the Active Directory primary domain controller.
+pdc1_domain: Domain name suffix of the Active Directory primary domain controller.
     Default: "ehe.exechealthgroup.com"
-pdc_server_ip: IP address of the Active Directory primary domain controller.
+pdc1_server_ip: IP address of the Active Directory primary domain controller.
+    Default: "192.168.0.206"
+pdc2_host: Hostname of the Active Directory alternate domain controller.
+    Default: "mgmtdc01"
+pdc2_domain: Domain name suffix of the Active Directory primary domain controller.
+    Default: "ehe.exechealthgroup.com"
+pdc2_server_ip: IP address of the Active Directory primary domain controller.
     Default: "192.168.0.206"
 netbios: NetBIOS name inside the Windows domain
     Default: "EHE"
-kerberos_host: Hostname of the Active Directory Kerberos authentication server
-    Default: Same as pdc_host
 kerberos_realm: Realm (domain suffix) of the Active Directory Kerberos authentication server
-    Default: Same as pdc_domain
-kerberos_server_ip: IP address of the Active Directory Kerberos authentication server
-    Default: Same as pdc_server_ip
+    Default: Same as pdc1_domain
+kerberos1_fqdn: Hostname of the Active Directory Kerberos authentication server
+    Default: Same as pdc1_host
+kerberos1_server_ip: IP address of the Active Directory Kerberos authentication server
+    Default: Same as pdc1_server_ip
+kerberos2_fqdn: Hostname of the Active Directory Kerberos authentication server
+    Default: Same as pdc1_host
+kerberos2_server_ip: IP address of the Active Directory Kerberos authentication server
+    Default: Same as pdc1_server_ip
 rfc_version: LDAP RFC version (rfc2307 or rfc2303bis)
     Default: "rfc2307"
 
@@ -69,25 +79,50 @@ netplan_ns1: Nameserver for DNS lookup.
 netplan_ns2: Nameserver2 for DNS lookup.
     Default: Primary Domain Controller's IP address
 netplan_ns3: Nameserver3 for DNS lookup.
+    Default: Secondary Domain Controller's IP address.
+netplan_ns3: Nameserver4 for DNS lookup.
     Default: Amazon EC2 internal.
 netplan_dns1: DNS search domain
     Default: LDAP DNS suffix
 netplan_dns2: DNS search domain 2
     Default: EC2 internal
 
+UNJOIN VARIABLE:
+
+Optional: a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
+
+Example: ansible-playbook test.yml --extra-vars "unjoin=true"
+
+Use when: Replacing the server with a new one.
+
 Dependencies
 ------------
 
-None.
+Currently, this role will only work with Ubuntu.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- hosts: "tag_Name_ehe_management_{{ hostname }}"
+  become: True
+  become_user: root
+  gather_facts: yes
+  vars:
+    ansible_user: ubuntu
+  vars_prompt:
+    - name: admin_password
+      prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
+      private: yes
+  pre_tasks:
+    - name: Install min python if needed
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: false
+    - name: "Display all variables/facts known for {{ hostname }}"
+      debug:
+        var: hostvars[inventory_hostname]
+        verbosity: 0
+  roles:
+    - { role: "linux_ad_integration" }
 
 License
 -------

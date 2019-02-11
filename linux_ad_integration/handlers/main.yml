@@ -25,4 +25,5 @@
     state: restarted
 
 - name: restart netplan
-  command: netplan apply
+  shell: |
+    netplan apply

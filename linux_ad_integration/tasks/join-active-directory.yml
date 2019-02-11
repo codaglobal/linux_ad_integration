@@ -1,36 +1,58 @@
 ---
 - name: "Test the network"
-  shell: "nslookup {{ pdc_domain }}"
+  become: True
+  become_user: root
+  shell: "nslookup {{ ldap_domain }}"
   register: domain_check
+  ignore_errors: True
 
 - name: "Apply netplan"
+  become: True
+  become_user: root
   shell: "netplan apply"
   when:
     - domain_check is failed
 
 - name: "Test for domain membership"
+  become: True
+  become_user: root
   shell: wbinfo -t
   register: membership_check
-  ignore_errors: true
+  ignore_errors: True
+
+- name: "List the Kerberos Credentials for {{ admin_user }}"
+  become: True
+  become_user: root
+  command: klist -c
+  register: klist
+  ignore_errors: True
 
 - name: Generate a Kerberos Key
+  become: True
+  become_user: root
   shell: |
     echo -n '{{ admin_password }}' | kinit {{ admin_user }}
   when:
-    - membership_check is failed
+    - klist is failed
   no_log: True
 
-- name: "List the Kerberos Credentials for {{ admin_user }}"
-  command: klist -c
-  when:
-    - membership_check is failed
-
 - name: Join the Active Directory
+  become: True
+  become_user: root
   command: net ads join -k
   when:
+    - unjoin is undefined
     - membership_check is failed
   notify:
     - restart smbd
     - restart nmbd
     - restart winbind
     - restart ssh
+
+- name: Leave the Active Directory
+  become: True
+  become_user: root
+  command: net ads leave -k
+  when:
+    - unjoin is defined
+    - membership_check is successful

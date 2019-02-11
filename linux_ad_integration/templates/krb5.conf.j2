@@ -10,9 +10,15 @@
 
 [realms]
 {{ kerberos_realm|upper }} = {
-  kdc = {{ kerberos_host }}.{{ kerberos_realm }}
-  kdc = {{ kerberos_server_ip }}
-  default_domain = {{ pdc_host }}.{{ pdc_domain }}
+  kdc = {{ kerberos1_fqdn }}
+  kdc = {{ kerberos1_server_ip }}
+  kdc = {{ kerberos2_fqdn }}
+  kdc = {{ kerberos2_server_ip }}
+
+  admin_server = {{ ldap_server_ip }}
+  master_kdc = {{ kerberos1_fqdn }}
+  default_domain = {{ ldap_domain|upper }}
+
 }
 
 [domain_realm]

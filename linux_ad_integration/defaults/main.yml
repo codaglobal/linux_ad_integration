@@ -2,18 +2,26 @@
 # defaults file for linux_ad_integration
 # Global
 hostname: "bastion"
-ldap_host: "caldc03"
-ldap_domain: "ehe.exechealthgroup.com"
-ldap_server_ip: "192.168.0.200"
-pdc_host: "ehenydc01"
-pdc_domain: "ehe.exechealthgroup.com"
-pdc_server_ip: "192.168.0.206"
-netbios: "EHE"
-kerberos_host: "{{ pdc_host }}"
-kerberos_realm: "{{ pdc_domain }}"
-kerberos_server_ip: "{{ pdc_server_ip }}"
 admin_user: "join"
+
+ldap_domain: "ehe.exechealthgroup.com"
+ldap_host: "caldc03"
+ldap_server_ip: "192.168.0.200"
+netbios: "EHE"
 rfc_version: "rfc2307"
+
+pdc1_host: "ehenydc01"
+pdc1_domain: "ehe.exechealthgroup.com"
+pdc1_server_ip: "192.168.0.206"
+pdc2_host: "mgmtdc01"
+pdc2_domain: "{{ ldap_domain }}"
+pdc2_server_ip: "10.100.0.200"
+
+kerberos1_fqdn: "{{ pdc1_host }}.{{ ldap_domain }}"
+kerberos1_server_ip: "{{ pdc1_server_ip }}"
+kerberos2_fqdn: "{{ pdc2_host }}.{{ ldap_domain }}"
+kerberos2_server_ip: "{{ pdc2_server_ip }}"
+kerberos_realm: "{{ ldap_domain }}"
 
 # Default packages to be installed
 newpackages:
@@ -26,7 +34,11 @@ newpackages:
   - krb5-config
   - krb5-locales
   - krb5-user
-  - python-pexpect
+
+# Default Active Directory groups allowed for login
+access_groups:
+  - CODA Dev Users
+  - CODA Dev Admins
 
 # defaults for netplan-networking
 netplan_interface: "{{ ansible_default_ipv4.interface }}"
@@ -34,7 +46,8 @@ netplan_configured: true
 netplan_ip: "{{ ansible_default_ipv4.address }}"
 netplan_mac: "{{ ansible_default_ipv4.macaddress }}"
 netplan_ns1: "{{ ldap_server_ip }}"
-netplan_ns2: "{{ pdc_server_ip }}"
-netplan_ns3: "127.0.0.53"
+netplan_ns2: "{{ pdc1_server_ip }}"
+netplan_ns3: "{{ pdc2_server_ip }}"
+netplan_ns4: "127.0.0.53"
 netplan_dns1: "{{ ldap_domain }}"
 netplan_dns2: "ec2.internal"

@@ -2,7 +2,7 @@
 - name: Apt upgrade, then install all required packages
   import_tasks: pkg-install.yml
 
-- name: fill out the /etc/hosts file
+- name: Fill out the /etc/hosts file
   import_tasks: etc-hosts.yml
 
 - name: Configure NTP
@@ -20,8 +20,8 @@
 - name: Add winbind to nsswitch
   import_tasks: nsswitch.yml
 
-- name: Enable SSH PasswordAuthentication
-  import_tasks: sshd_config.yml
-
 - name: Join Active Directory domain
   import_tasks: join-active-directory.yml
+
+- name: Update authentication methods
+  import_tasks: authentication.yml

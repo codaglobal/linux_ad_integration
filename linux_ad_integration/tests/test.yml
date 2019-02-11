@@ -1,13 +1,13 @@
 ---
 - hosts: "tag_Name_ehe_management_{{ hostname }}"
-  become: true
-  become_method: sudo
+  become: True
+  become_user: root
   gather_facts: yes
   vars:
     ansible_user: ubuntu
   vars_prompt:
     - name: admin_password
-      prompt: "Please enter the password for {{ admin_user }}@{{ pdc_domain|upper }}"
+      prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
       private: yes
   pre_tasks:
     - name: Install min python if needed

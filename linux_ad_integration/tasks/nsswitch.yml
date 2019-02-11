@@ -1,5 +1,7 @@
 ---
 - name: Add winbind to nsswitch
+  become: True
+  become_user: root
   lineinfile:
     dest=/etc/nsswitch.conf
     backup=True
