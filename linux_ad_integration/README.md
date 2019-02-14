@@ -21,6 +21,8 @@ hostname: Intended hostname of the target server.
     Default: "bastion"
 admin_user: A user who has the rights to join / unjoin computers to the Active Directory
     Default: "join"
+admin_pasword: The password for the admin user.
+    Default: Blank. Suggested use: handle with a vars_prompt (see example playbook).
 netbios: NetBIOS name inside the Windows domain
     Default: "EHE"
 rfc_version: LDAP RFC version (rfc2307 or rfc2303bis)

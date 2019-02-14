@@ -2,6 +2,8 @@
 # Global
 hostname: "bastion"
 admin_user: "join"
+admin_password: "{{ admin_password }}"
+ansible_user: "ubuntu"
 netbios: "EHE"
 rfc_version: "rfc2307"
 ldap_domain: "ehe.exechealthgroup.com"
@@ -20,21 +22,21 @@ ldap_server:
 
 # Domain Controllers in order of precedence
 pdc:
-  - host: "mgmtdc01"
-    domain: "{{ ldap_domain }}"
-    server_ip: "10.100.0.200"
-  - host: "ehenydc02"
-    domain: "{{ ldap_domain }}"
-    server_ip: "192.168.10.208"
-  - host: "mgmtdc02"
-    domain: "{{ ldap_domain }}"
-    server_ip: "10.100.16.200"
   - host: "ehenydc01"
     domain: "ehe.exechealthgroup.com"
     server_ip: "192.168.0.206"
+  - host: "ehenydc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "192.168.10.208"
   - host: "ehenydc03"
     domain: "{{ ldap_domain }}"
     server_ip: "192.168.10.207"
+  - host: "mgmtdc01"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.0.200"
+  - host: "mgmtdc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"
 
 # Kerberos Settings
 kerberos_realm: "{{ ldap_domain }}"
