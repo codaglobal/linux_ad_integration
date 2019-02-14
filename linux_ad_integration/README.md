@@ -1,7 +1,7 @@
 linux_ad_integration
 =========
 
-This role automates the integration of a standalone Ubuntu server into any Active Directory. It also adds passthrough authentication to SSH, based on Active Directory user groups.
+This role automates the integration of a standalone Ubuntu server into any Active Directory. It adds passthrough authentication to SSH, based on Active Directory user groups, and creates Linux user accounts for all users. The role uses Samba, Winbind, and PAM to join and authenticate users against Kerberos
 
 Requirements
 ------------
@@ -15,40 +15,62 @@ These required variables are currently in use by the role:
 
 GLOBAL:
 
+These required variables describe the Active Directory where the host will become a member.
+
 hostname: Intended hostname of the target server.
     Default: "bastion"
-ldap_host: Hostname of the Active Directory LDAP server.
-    Default: "caldc03"
-ldap_domain: Domain suffix of the Active Directory LDAP server.
-    Default: "ehe.exechealthgroup.com"
-ldap_server_ip: IP address of the Active Direcectory LDAP server.
-    Default: "192.168.0.200"
-pdc1_host: Hostname of the Active Directory primary domain controller.
-    Default: "ehenydc01"
-pdc1_domain: Domain name suffix of the Active Directory primary domain controller.
-    Default: "ehe.exechealthgroup.com"
-pdc1_server_ip: IP address of the Active Directory primary domain controller.
-    Default: "192.168.0.206"
-pdc2_host: Hostname of the Active Directory alternate domain controller.
-    Default: "mgmtdc01"
-pdc2_domain: Domain name suffix of the Active Directory primary domain controller.
-    Default: "ehe.exechealthgroup.com"
-pdc2_server_ip: IP address of the Active Directory primary domain controller.
-    Default: "192.168.0.206"
+admin_user: A user who has the rights to join / unjoin computers to the Active Directory
+    Default: "join"
 netbios: NetBIOS name inside the Windows domain
     Default: "EHE"
-kerberos_realm: Realm (domain suffix) of the Active Directory Kerberos authentication server
-    Default: Same as pdc1_domain
-kerberos1_fqdn: Hostname of the Active Directory Kerberos authentication server
-    Default: Same as pdc1_host
-kerberos1_server_ip: IP address of the Active Directory Kerberos authentication server
-    Default: Same as pdc1_server_ip
-kerberos2_fqdn: Hostname of the Active Directory Kerberos authentication server
-    Default: Same as pdc1_host
-kerberos2_server_ip: IP address of the Active Directory Kerberos authentication server
-    Default: Same as pdc1_server_ip
 rfc_version: LDAP RFC version (rfc2307 or rfc2303bis)
     Default: "rfc2307"
+ldap_domain: Domain suffix of the Active Directory LDAP server.
+    Default: "ehe.exechealthgroup.com"
+access_groups: List of groups that should be allowed to log into the server. Multiple groups supported, 1 is required.
+    Defaults:
+      - Coda Dev Users
+      - Coda Dev Admins
+
+UNJOIN VARIABLE:
+
+Optional: a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
+
+Example: ansible-playbook test.yml --extra-vars "unjoin=true"
+
+Use when: Replacing the server with a new one.
+
+LDAP Server(s):
+
+Hostname(s) of one or more Active Directory LDAP servers. Multiple entries supported. 1 entry is required.
+
+ldap_server:
+- host: "hostname"            # Default: "caldc03"
+  server_ip: "ip address"     # Default: "192.168.10.200"
+  domain: "domain name"       # Default: "{{ ldap_domain }}"
+
+PDC Server(s):
+
+Hostname of the Active Directory Primary Domain Controller(s). Multiple entries supported. 1 entry is required.
+
+pdc:
+  - host: "hostname"          # Default: "mgmtdc01"
+    domain: "ip address"      # Default: "{{ ldap_domain }}"
+    server_ip: "domain name"  # Default: "10.100.0.200"
+
+KERBEROS SETTINGS:
+
+Information required to authenticate with Kerberos.
+
+kerberos_realm: Realm (domain suffix) of the Active Directory Kerberos authentication server
+    Default: "{{ ldap_domain }}"
+
+Kerberos ticket servers in a variable list. Multiple entries supported. 1 entry is required.
+
+kerberos_server:
+  - host: "hostname"          # Default: "{{ pdc.0.host }}"
+    domain: "ip address"      # Default: "{{ ldap_domain }}"
+    server_ip: "domain name"  # Default: "{{ pdc.0.server_ip }}"
 
 PACKAGES:
 
@@ -74,26 +96,9 @@ netplan_ip: Adapter IP addresses
     Default: Primary private IP address (auto-assigned)
 netplan_mac: Adapter MAC address
     Default: Primary adapter's MAC address
-netplan_ns1: Nameserver for DNS lookup.
-    Default: LDAP server's IP address
-netplan_ns2: Nameserver2 for DNS lookup.
-    Default: Primary Domain Controller's IP address
-netplan_ns3: Nameserver3 for DNS lookup.
-    Default: Secondary Domain Controller's IP address.
-netplan_ns3: Nameserver4 for DNS lookup.
-    Default: Amazon EC2 internal.
-netplan_dns1: DNS search domain
-    Default: LDAP DNS suffix
-netplan_dns2: DNS search domain 2
-    Default: EC2 internal
-
-UNJOIN VARIABLE:
-
-Optional: a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
-
-Example: ansible-playbook test.yml --extra-vars "unjoin=true"
-
-Use when: Replacing the server with a new one.
+netplan_ec2: AWS internal lookup. Defaults are:
+  - domain: "ec2.internal"
+    server_ip: "127.0.0.53"
 
 Dependencies
 ------------
@@ -127,4 +132,5 @@ Example Playbook
 License
 -------
 
-Apache 2.0
+Apache 2.0 Version 2.0, January 2004  
+http://www.apache.org/licenses/

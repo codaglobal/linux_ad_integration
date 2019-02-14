@@ -1,6 +1,6 @@
 [libdefaults]
     ticket_lifetime = 24000
-    default_realm = {{ ldap_domain|upper }}
+    default_realm = {{ kerberos_realm|upper }}
     default_tgs_entypes = rc4-hmac des-cbc-md5
     default_tkt__enctypes = rc4-hmac des-cbc-md5
     permitted_enctypes = rc4-hmac des-cbc-md5
@@ -10,13 +10,15 @@
 
 [realms]
 {{ kerberos_realm|upper }} = {
-  kdc = {{ kerberos1_fqdn }}
-  kdc = {{ kerberos1_server_ip }}
-  kdc = {{ kerberos2_fqdn }}
-  kdc = {{ kerberos2_server_ip }}
+{% if kerberos_server is defined %}
+{% for server in kerberos_server %}
+  kdc = {{ server.host }}.{{ server.domain }}
+  kdc = {{ server.server_ip}}
+{% endfor %}
+{% endif %}
 
-  admin_server = {{ ldap_server_ip }}
-  master_kdc = {{ kerberos1_fqdn }}
+  admin_server = {{ ldap_server.0.server_ip }}
+  master_kdc = {{ kerberos_server.0.server_ip }}
   default_domain = {{ ldap_domain|upper }}
 
 }

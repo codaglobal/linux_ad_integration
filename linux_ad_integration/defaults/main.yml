@@ -1,27 +1,72 @@
 ---
-# defaults file for linux_ad_integration
 # Global
 hostname: "bastion"
 admin_user: "join"
-
-ldap_domain: "ehe.exechealthgroup.com"
-ldap_host: "caldc03"
-ldap_server_ip: "192.168.0.200"
 netbios: "EHE"
 rfc_version: "rfc2307"
+ldap_domain: "ehe.exechealthgroup.com"
+access_groups:
+  - CODA Dev Users
+  - CODA Dev Admins
 
-pdc1_host: "ehenydc01"
-pdc1_domain: "ehe.exechealthgroup.com"
-pdc1_server_ip: "192.168.0.206"
-pdc2_host: "mgmtdc01"
-pdc2_domain: "{{ ldap_domain }}"
-pdc2_server_ip: "10.100.0.200"
+# LDAP Servers in order of precedence
+ldap_server:
+  - host: "caldc03"
+    server_ip: "192.168.10.200"
+    domain: "{{ ldap_domain }}"
+  - host: "caldc02"
+    server_ip: "192.168.10.202"
+    domain: "{{ ldap_domain }}"
 
-kerberos1_fqdn: "{{ pdc1_host }}.{{ ldap_domain }}"
-kerberos1_server_ip: "{{ pdc1_server_ip }}"
-kerberos2_fqdn: "{{ pdc2_host }}.{{ ldap_domain }}"
-kerberos2_server_ip: "{{ pdc2_server_ip }}"
+# Domain Controllers in order of precedence
+pdc:
+  - host: "mgmtdc01"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.0.200"
+  - host: "ehenydc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "192.168.10.208"
+  - host: "mgmtdc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"
+  - host: "ehenydc01"
+    domain: "ehe.exechealthgroup.com"
+    server_ip: "192.168.0.206"
+  - host: "ehenydc03"
+    domain: "{{ ldap_domain }}"
+    server_ip: "192.168.10.207"
+
+# Kerberos Settings
 kerberos_realm: "{{ ldap_domain }}"
+kerberos_server:
+  - host: "{{ pdc.0.host }}"
+    domain: "{{ ldap_domain }}"
+    server_ip: "{{ pdc.0.server_ip }}"
+  - host: "{{ pdc.1.host }}"
+    domain: "{{ ldap_domain }}"
+    server_ip: "{{ pdc.1.server_ip }}"
+  - host: "{{ pdc.2.host }}"
+    domain: "{{ ldap_domain }}"
+    server_ip: "{{ pdc.2.server_ip }}"
+
+# defaults for netplan-networking
+netplan_interface: "{{ ansible_default_ipv4.interface }}"
+netplan_configured: true
+netplan_ip: "{{ ansible_default_ipv4.address }}"
+netplan_mac: "{{ ansible_default_ipv4.macaddress }}"
+netplan_ec2:
+  - domain: "ec2.internal"
+    server_ip: "127.0.0.53"
+#
+# Uncomment below and update to add specific netplan_nameservers
+# Leave commented to include  all LDAP and PDC servers
+#
+#  - host: "host1"
+#    domain: "domain.name"
+#    server_ip: "192.168.0.1"
+#  - host: "host2"
+#    domain: "domain.name"
+#    server_ip: "192.168.0.2"
 
 # Default packages to be installed
 newpackages:
@@ -34,20 +79,4 @@ newpackages:
   - krb5-config
   - krb5-locales
   - krb5-user
-
-# Default Active Directory groups allowed for login
-access_groups:
-  - CODA Dev Users
-  - CODA Dev Admins
-
-# defaults for netplan-networking
-netplan_interface: "{{ ansible_default_ipv4.interface }}"
-netplan_configured: true
-netplan_ip: "{{ ansible_default_ipv4.address }}"
-netplan_mac: "{{ ansible_default_ipv4.macaddress }}"
-netplan_ns1: "{{ ldap_server_ip }}"
-netplan_ns2: "{{ pdc1_server_ip }}"
-netplan_ns3: "{{ pdc2_server_ip }}"
-netplan_ns4: "127.0.0.53"
-netplan_dns1: "{{ ldap_domain }}"
-netplan_dns2: "ec2.internal"
+  - python-pexpect

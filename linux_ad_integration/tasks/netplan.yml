@@ -2,10 +2,21 @@
 - name: "Add Netplan rules at /etc/netplan/500-{{ netbios }}-netplan.yaml"
   become: yes
   become_user: root
-  template:
-    src: netplan.yaml.j2
+  copy:
     dest: "/etc/netplan/500-{{ netbios }}-netplan.yaml"
-    owner: root
+    content: |
+      ---
+      network:
+          version: 2
+          ethernets:
+             {{ netplan_interface }}:
+                  dhcp4: true
+                  match:
+                      macaddress: {{ netplan_mac }}
+                  set-name: {{ netplan_interface }}
+                  nameservers:
+                    search: [ {% if pdc is defined %}{{ (netplan_ec2 + pdc) | map(attribute='domain') | unique | join(', ') }}{% endif %} ]
+                    addresses: [ {% if pdc is defined %}{{ (netplan_ec2 + pdc) | map(attribute='server_ip') | unique | join(', ') }}{% endif %} ]
     mode: 0644
   notify: restart netplan
 

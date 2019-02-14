@@ -20,20 +20,16 @@
   register: membership_check
   ignore_errors: True
 
-- name: "List the Kerberos Credentials for {{ admin_user }}"
+- name: Destroy existing Kerberos Credentials
   become: True
   become_user: root
-  command: klist -c
-  register: klist
-  ignore_errors: True
+  command: kdestroy -A
 
 - name: Generate a Kerberos Key
   become: True
   become_user: root
   shell: |
-    echo -n '{{ admin_password }}' | kinit {{ admin_user }}
-  when:
-    - klist is failed
+    echo -n '{{ admin_password }}' | kinit '{{ admin_user }}'
   no_log: True
 
 - name: Join the Active Directory
