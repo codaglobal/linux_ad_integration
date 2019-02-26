@@ -69,16 +69,3 @@ netplan_ec2:
 #  - host: "host2"
 #    domain: "domain.name"
 #    server_ip: "192.168.0.2"
-
-# Default packages to be installed
-newpackages:
-  - ntp
-  - ntpdate
-  - winbind
-  - samba
-  - libnss-winbind
-  - libpam-winbind
-  - krb5-config
-  - krb5-locales
-  - krb5-user
-  - python-pexpect

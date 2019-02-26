@@ -74,20 +74,6 @@ kerberos_server:
     domain: "ip address"      # Default: "{{ ldap_domain }}"
     server_ip: "domain name"  # Default: "{{ pdc.0.server_ip }}"
 
-PACKAGES:
-
-newpackages: Packages to be installed on launch. Add or subtract from this YAML list as appropriate.
-Defaults:
-  - ntp
-  - ntpdate
-  - winbind
-  - samba
-  - libnss-winbind
-  - libpam-winbind
-  - krb5-config
-  - krb5-locales
-  - krb5-user
-
 NETWORKING VARIABLES:
 This role uses Netplan to add layers of configuration onto an existing Ubuntu network stack. For the most part, these may be left at their defaults. But they are exposed for configuration by advanced users.
 
