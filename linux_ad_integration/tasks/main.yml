@@ -1,0 +1,27 @@
+---
+- name: Apt upgrade, then install all required packages
+  import_tasks: pkg-install.yml
+
+- name: Fill out the /etc/hosts file
+  import_tasks: etc-hosts.yml
+
+- name: Configure NTP
+  import_tasks: ntp.yml
+
+- name: Configure Netplan
+  import_tasks: netplan.yml
+
+- name: Configure Kerberos5
+  import_tasks: krb5.yml
+  
+- name: Configure Samba
+  import_tasks: samba.yml
+
+- name: Add winbind to nsswitch
+  import_tasks: nsswitch.yml
+
+- name: Active Directory tasks
+  import_tasks: active-directory.yml
+
+- name: Update authentication methods
+  import_tasks: authentication.yml

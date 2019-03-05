@@ -1,0 +1,18 @@
+--- # Setup NTP on the system
+
+- name: Enable and start the ntp service
+  service:
+    name: ntp
+    enabled: yes
+    state: started
+
+- name: "Setting NTP config - /etc/ntp.conf"
+  become: yes
+  become_user: root
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+    owner: root
+    mode: 0644
+  notify:
+    - restart ntp

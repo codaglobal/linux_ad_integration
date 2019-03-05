@@ -1,0 +1,42 @@
+[libdefaults]
+    ticket_lifetime = 24000
+    default_realm = {{ kerberos_realm|upper }}
+    default_tgs_entypes = rc4-hmac des-cbc-md5
+    default_tkt__enctypes = rc4-hmac des-cbc-md5
+    permitted_enctypes = rc4-hmac des-cbc-md5
+    dns_lookup_realm = true
+    dns_lookup_kdc = true
+    dns_fallback = yes
+
+[realms]
+{{ kerberos_realm|upper }} = {
+{% if kerberos_server is defined %}
+{% for server in kerberos_server %}
+  kdc = {{ server.host }}.{{ server.domain }}
+  kdc = {{ server.server_ip}}
+{% endfor %}
+{% endif %}
+
+  admin_server = {{ ldap_server.0.server_ip }}
+  master_kdc = {{ kerberos_server.0.server_ip }}
+  default_domain = {{ ldap_domain|upper }}
+
+}
+
+[domain_realm]
+    .{{ ldap_domain|lower }} = {{ ldap_domain|upper }}
+    {{ ldap_domain|lower }} = {{ ldap_domain|upper }}
+
+[appdefaults]
+pam = {
+   debug = false
+   ticket_lifetime = 36000
+   renew_lifetime = 36000
+   forwardable = true
+   krb4_convert = false
+}
+
+[logging]
+default = FILE:/var/log/krb5libs.log
+kdc = FILE:/var/log/krb5kdc.log
+admin_server = FILE:/var/log/kadmind.log

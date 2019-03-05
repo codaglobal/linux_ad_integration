@@ -1,0 +1,9 @@
+---
+- name: Setting krb5 config at /etc/krb5.conf
+  become: yes
+  become_user: root
+  template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+    owner: root
+    mode: 0644

@@ -1,0 +1,78 @@
+---
+# In the case of Active Directory Leave
+- name: Enable SSH common-account
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^#.*@include common-account$'
+    line: '@include common-account'
+    state: present
+  when:
+    - unjoin is defined
+
+- name: Disable SSH PasswordAuthentication
+  become: True
+  become_user: root
+  lineinfile:
+    dest=/etc/ssh/sshd_config
+    backup=True
+    regexp='# PasswordAuthentication no'
+    line='PasswordAuthentication no'
+    state=present
+  when:
+    - unjoin is defined
+  notify:
+    - restart ssh
+
+# In the case of Active Directory join
+- name: Enable SSH PasswordAuthentication
+  become: True
+  become_user: root
+  lineinfile:
+    dest=/etc/ssh/sshd_config
+    backup=True
+    regexp='PasswordAuthentication no'
+    line='# PasswordAuthentication no'
+    state=present
+  when:
+    - unjoin is undefined
+  notify:
+    - restart ssh
+
+- name: Enable home Directories
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/common-session
+    regexp: '^session*.*homedir*.*$'
+    line: 'session optional                        pam_mkhomedir.so'
+    state: present
+    insertbefore: "# end of pam-auth-update config"
+
+- name: Append SSH Login Groups
+  become: True
+  become_user: root
+  template:
+    src: pam.d_sshd.j2
+    dest: /etc/pam.d/sshd
+    owner: root
+    mode: 0644
+  when:
+    - unjoin is undefined
+
+- name: Kill SSH
+  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
+  async: 3
+  poll: 2
+
+- name: Disable SSH common-account
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^@include common-account$'
+    line: '# @include common-account'
+    state: present
+  when:
+    - unjoin is undefined

@@ -1,0 +1,12 @@
+---
+- name: Setup SAMBA on the system
+  become: yes
+  become_user: root
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    mode: 0644
+  notify:
+    - restart smbd
+    - restart nmbd

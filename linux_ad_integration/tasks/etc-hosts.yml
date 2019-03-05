@@ -1,0 +1,16 @@
+---
+- name: Append servers to /etc/hosts
+  become: True
+  become_user: root
+  vars:
+    this_server:
+      - host: "{{ hostname }}"
+        server_ip: "{{ ansible_default_ipv4.address }}"
+        domain: "{{ ldap_domain }}"
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ item.server_ip }}.*$"
+    line: "{{ item.server_ip }}\t\t{{ item.host }}.{{ item.domain }} {{ item.host }} {{ item.host|upper }}.{{ item.domain|upper }} {{ item.host|upper }}"
+    insertafter: '^127*.*1.*localhost'
+    state: present
+  loop: "{{ (this_server + ldap_server + pdc) }}"

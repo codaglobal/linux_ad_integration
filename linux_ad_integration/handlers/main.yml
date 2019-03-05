@@ -1,0 +1,29 @@
+---
+- name: restart ntp
+  service:
+    name: ntp
+    state: restarted
+
+- name: restart smbd
+  service:
+    name: smbd
+    state: restarted
+
+- name: restart nmbd
+  service:
+    name: nmbd
+    state: restarted
+
+- name: restart winbind
+  service:
+    name: winbind
+    state: restarted
+
+- name: restart ssh
+  service:
+    name: ssh
+    state: restarted
+
+- name: restart netplan
+  shell: |
+    netplan apply
