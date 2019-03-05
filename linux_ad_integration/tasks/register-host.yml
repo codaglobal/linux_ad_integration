@@ -1,0 +1,35 @@
+- hosts:                            localhost
+  gather_facts:                     no
+  tasks:
+  - name:                           Add role variables
+    include_vars:                   "{{ playbook_dir }}/../defaults/main.yml"
+    when:
+      - aws_tag is not defined
+
+  - name:                           Get AWS Facts for Instances
+    ec2_instance_facts:
+      profile:                      "{{ aws_tag.profile }}"
+      region:                       "{{ aws_tag.region }}"
+      filters:
+        # tag:environment:          "{{ aws_tag.environment }}"
+        # tag:region_letter:        "{{ aws_tag.region_letter }}"
+        # tag:function:             "{{ aws_tag.function }}"
+        tag:function:               "openvp*"
+    register:                       aws_data
+
+  - name:                           Add remote host to Hosts for Ansible Execution
+    add_host:
+      hostname:                     "{{ item.tags.Name }}"
+      groups:                       "role_execution_hosts"
+      ansible_ssh_private_key_file: "/tmp/{{ item.tags.company }}_{{ item.tags.environment }}_instances.pem"
+      ansible_ssh_host:             "{{ item.public_ip_address }}"
+      ansible_user:                 "{{ item.tags.user }}"
+    loop:                           "{{ aws_data.instances }}"
+    loop_control:
+      index_var:                    index_count
+
+- hosts:                            role_execution_hosts
+  become_method:                    sudo
+  gather_facts:                     no
+  roles:
+    - { role:                       "{{ playbook_dir }}/.." }

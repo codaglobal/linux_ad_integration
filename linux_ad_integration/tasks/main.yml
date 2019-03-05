@@ -1,4 +1,7 @@
 ---
+- name: Add remote host to local Ansible hosts
+  import_tasks: register-host.yml
+
 - name: Apt upgrade, then install all required packages
   import_tasks: pkg-install.yml
 
@@ -13,7 +16,7 @@
 
 - name: Configure Kerberos5
   import_tasks: krb5.yml
-  
+
 - name: Configure Samba
   import_tasks: samba.yml
 
