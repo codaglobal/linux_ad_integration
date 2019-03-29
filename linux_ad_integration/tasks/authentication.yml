@@ -72,12 +72,11 @@
 - name: "Grant sudo access to {{ sudo_group }}"
   become: True
   become_user: root
-  lineinfile:
-    dest: /etc/sudoers
-    backup: True
-    line: "%{{ sudo_group }} ALL=(ALL) ALL"
-    insertafter: "# Members of the admin group may gain root privileges"
-    state: present
+  replace:
+    path: /etc/sudoers
+    regexp: '^# Members of the admin group may gain root privileges$'
+    replace: '# Members of the admin group may gain root privileges\n%{{ sudo_group }} ALL=(ALL) ALL\n"%domain admins" ALL=(ALL) ALL'
+    backup: yes
 
 - name: "Remove sudo access from {{ sudo_group }}"
   become: True

@@ -7,25 +7,9 @@
     ansible_user: ubuntu
     hostname: "bastion_temp"
     access_groups:
-      - vpn-prd
-    sudo_group: vpn-prd
-    # LDAP Servers in order of precedence
-    ldap_server:
-      - host: "mgmtdc01"
-        domain: "{{ ldap_domain }}"
-        server_ip: "10.100.0.200"
-      - host: "mgmtdc02"
-        domain: "{{ ldap_domain }}"
-        server_ip: "10.100.16.200"
-    # Domain Controllers in order of precedence
-    pdc:
-      - host: "mgmtdc01"
-        domain: "{{ ldap_domain }}"
-        server_ip: "10.100.0.200"
-      - host: "mgmtdc02"
-        domain: "{{ ldap_domain }}"
-        server_ip: "10.100.16.200"
-vars_prompt:
+      - "vpn-prd"
+    sudo_group: "vpn-prd"
+  vars_prompt:
     - name: admin_password
       prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
       private: yes
