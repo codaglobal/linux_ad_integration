@@ -2,10 +2,8 @@
 - name: Add winbind to nsswitch
   become: True
   become_user: root
-  lineinfile:
-    dest=/etc/nsswitch.conf
-    backup=True
-    backrefs=True
-    state=present
-    regexp='^(passwd.*(?<!winbind))$\n^(group.*(?<!winbind))$'
-    line='\1 winbind\2 winbind'
+  replace:
+    path: /etc/nsswitch.conf
+    regexp: '^(passwd.*(?<!winbind))$\n^(group.*(?<!winbind))$'
+    replace: '\1 winbind\n\2 winbind'
+    backup: yes

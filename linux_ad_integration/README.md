@@ -31,8 +31,10 @@ ldap_domain: Domain suffix of the Active Directory LDAP server.
     Default: "ehe.exechealthgroup.com"
 access_groups: List of groups that should be allowed to log into the server. Multiple groups supported, 1 is required.
     Defaults:
-      - Coda Dev Users
+      - vpn-prd
       - Coda Dev Admins
+
+sudo_group: One group that should be allowed sudo access to the server.
 
 UNJOIN VARIABLE:
 
@@ -102,6 +104,7 @@ Example Playbook
   gather_facts: yes
   vars:
     ansible_user: ubuntu
+
   vars_prompt:
     - name: admin_password
       prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
