@@ -5,14 +5,18 @@
   gather_facts: yes
   vars:
     ansible_user: ubuntu
+    hostname: "bastionish1"
   vars_prompt:
     - name: admin_password
       prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
       private: yes
   pre_tasks:
-    - name: Install min python if needed
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-      changed_when: false
+    - name: Refresh apt cache
+      become: no
+      local_action: shell ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ inventory_hostname }} sudo apt-get update
+    - name: Install Python-apt to pull in Python
+      become: no
+      local_action: shell ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ inventory_hostname }} sudo apt-get install --no-install-recommends --assume-yes python-apt
     - name: "Display all variables/facts known for {{ hostname }}"
       debug:
         var: hostvars[inventory_hostname]

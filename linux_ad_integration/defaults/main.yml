@@ -8,8 +8,9 @@ netbios: "EHE"
 rfc_version: "rfc2307"
 ldap_domain: "ehe.exechealthgroup.com"
 access_groups:
-  - CODA Dev Users
+  - vpn-prd
   - CODA Dev Admins
+sudo_group: "vpn-prd"
 
 # LDAP Servers in order of precedence
 ldap_server:
@@ -47,9 +48,6 @@ kerberos_server:
   - host: "{{ pdc.1.host }}"
     domain: "{{ ldap_domain }}"
     server_ip: "{{ pdc.1.server_ip }}"
-  - host: "{{ pdc.2.host }}"
-    domain: "{{ ldap_domain }}"
-    server_ip: "{{ pdc.2.server_ip }}"
 
 # defaults for netplan-networking
 netplan_interface: "{{ ansible_default_ipv4.interface }}"

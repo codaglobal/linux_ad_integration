@@ -1,4 +1,20 @@
 ---
 # vars file for linux_ad_integration
-hostname: "bastionish9"
 # unjoin: true
+
+# LDAP Servers in order of precedence
+ldap_server:
+  - host: "mgmtdc01"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.0.200"
+  - host: "mgmtdc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"
+# Domain Controllers in order of precedence
+pdc:
+  - host: "mgmtdc01"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.0.200"
+  - host: "mgmtdc02"
+    domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"

@@ -1,6 +1,15 @@
 ---
 - name: Upgrade all packages to the latest version
   become_user: root
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    autoremove: yes
+    force_apt_get: True
+
+- name: Install all required packages
+  become_user: root
   vars:
     newpackages:
       - ntp
@@ -13,15 +22,4 @@
       - krb5-locales
       - krb5-user
   apt:
-    name: "*"
-    state: latest
-    update_cache: yes
-    force_apt_get: True
-
-- name: Install all required packages
-  become_user: root
-  apt:
-    name: "{{ packages }}"
-  vars:
-    packages:
-      "{{ newpackages }}"
+    name: "{{ newpackages }}"
