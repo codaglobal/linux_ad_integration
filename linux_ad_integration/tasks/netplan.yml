@@ -26,4 +26,4 @@
   cron:
     name: "enforce netplan"
     minute: "*/5"
-    job: "netplan apply"
+    job: "netplan apply >/dev/null 2>&1"
