@@ -1,19 +1,16 @@
-linux_ad_integration
-=========
+#Linux Active Directory Integration
 
 This role automates the integration of a standalone Ubuntu server into any Active Directory. It adds passthrough authentication to SSH, based on Active Directory user groups, and creates Linux user accounts for all users. The role uses Samba, Winbind, and PAM to join and authenticate users against Kerberos
 
-Requirements
-------------
+##Requirements
 
 Ansible dynamic inventory plugins are required as described in https://docs.ansible.com/ansible/latest/user_guide/intro_dynamic_inventory.html. Specifically, the test playbook in this role depends on AWS EC2 dynamic inventory. This playbook looks for its host based on AWS tags.
 
-Role Variables
---------------
+##Role Defaults and Variables
 
 These required variables are currently in use by the role:
 
-GLOBAL:
+###Global Variables
 
 These required variables describe the Active Directory where the host will become a member.
 
@@ -36,33 +33,27 @@ access_groups: List of groups that should be allowed to log into the server. Mul
 
 sudo_group: One group that should be allowed sudo access to the server.
 
-UNJOIN VARIABLE:
+###LDAP Server(s)
 
-Optional: a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
-
-Example: ansible-playbook test.yml --extra-vars "unjoin=true"
-
-Use when: Replacing the server with a new one.
-
-LDAP Server(s):
-
-Hostname(s) of one or more Active Directory LDAP servers. Multiple entries supported. 1 entry is required.
+Hostname(s) of one or more Active Directory LDAP servers. The LDAP server supports Active Directory lookup services. Multiple entries supported. 1 entry is required.
 
 ldap_server:
-- host: "hostname"            # Default: "caldc03"
-  server_ip: "ip address"     # Default: "192.168.10.200"
+- host: "hostname"            # Default: "mgmtdc01"
+  server_ip: "ip address"     # Default: "10.100.0.200"
   domain: "domain name"       # Default: "{{ ldap_domain }}"
 
-PDC Server(s):
+###PDC Server(s)
 
-Hostname of the Active Directory Primary Domain Controller(s). Multiple entries supported. 1 entry is required.
+Hostname of the Active Directory Primary Domain Controller(s). Multiple entries supported. 1 entry is required, multiple supported in a dictionary list. Each server must be accessible and able to join a host to the Active Directory.
 
-pdc:
-  - host: "hostname"          # Default: "mgmtdc01"
-    domain: "ip address"      # Default: "{{ ldap_domain }}"
-    server_ip: "domain name"  # Default: "10.100.0.200"
+  - host: "hostname1"          # Default: "mgmtdc01"
+    domain: "ip address2"      # Default: "{{ ldap_domain }}"
+    server_ip: "12.34.5.67"    # Default: "10.100.0.200"
+  - host: "hostname2"          # Default: "mgmtdc02"
+    domain: "ip address2"      # Default: "{{ ldap_domain }}"
+    server_ip: "12.34.5.68"    # Default: "10.100.10.200"
 
-KERBEROS SETTINGS:
+###KERBEROS SETTINGS
 
 Information required to authenticate with Kerberos.
 
@@ -76,7 +67,7 @@ kerberos_server:
     domain: "ip address"      # Default: "{{ ldap_domain }}"
     server_ip: "domain name"  # Default: "{{ pdc.0.server_ip }}"
 
-NETWORKING VARIABLES:
+###NETWORKING VARIABLES
 This role uses Netplan to add layers of configuration onto an existing Ubuntu network stack. For the most part, these may be left at their defaults. But they are exposed for configuration by advanced users.
 
 netplan_interface: Ethernet adapter to be configured
@@ -90,15 +81,31 @@ netplan_ec2: AWS internal lookup. Defaults are:
   - domain: "ec2.internal"
     server_ip: "127.0.0.53"
 
-Dependencies
-------------
+###Optional Variables
+
+####unjoin
+
+__Optional:__ a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
+
+Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"```
+
+Use when: Replacing the server with a new one.
+
+####kops_deploy
+
+__Optional:__ a boolean variable for adding kubectl and helm clients to the server. Set in vars/main.yml or as --extra-vars "kops_deploy=true"
+
+Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "kops_deploy=true"```
+
+Use when: This server will access and/or manage Kubernetes clusters.
+
+##Dependencies
 
 Currently, this role will only work with Ubuntu.
 
-Example Playbook
-----------------
-
-- hosts: "tag_Name_ehe_management_{{ hostname }}"
+##Example Playbook
+```
+- hosts: "192.168.0.1"
   become: True
   become_user: root
   gather_facts: yes
@@ -119,9 +126,14 @@ Example Playbook
         verbosity: 0
   roles:
     - { role: "linux_ad_integration" }
+```
 
-License
--------
+**Example Run Command**
+```
+AWS_PROFILE=ehe-dev AWS_REGION=us-east-1 ansible-playbook test.yml --extra-vars "kops_deploy=true"
+```
+
+##License
 
 Apache 2.0 Version 2.0, January 2004  
 http://www.apache.org/licenses/
