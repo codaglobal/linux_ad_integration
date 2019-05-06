@@ -1,0 +1,34 @@
+---
+- name: Add the ansible apt repository
+  apt_repository:
+    repo: ppa:ansible/ansible
+    state: present
+
+- name: Install the core package
+  become_user: root
+  apt:
+    name: software-properties-common
+
+- name: Upgrade all packages to the latest version
+  become_user: root
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+    autoremove: yes
+    force_apt_get: True
+
+- name: Install Ansible
+  become_user: root
+  apt:
+    name: ansible
+
+- name: Uncomment roles_path
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/ansible/ansible.cfg
+    backup: True
+    regexp: '# roles_path    = /etc/ansible/roles'
+    line: 'roles_path    = /etc/ansible/roles'
+    state: present

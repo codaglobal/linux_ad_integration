@@ -23,14 +23,3 @@
       - krb5-user
   apt:
     name: "{{ newpackages }}"
-
-- name: Install kops deployment tools with snap
-  become_user: root
-  vars:
-    kopsnaps:
-      - kubectl
-      - helm
-  shell: snap install "{{ item }}" --classic
-  loop: "{{ kopsnaps }}"
-  when:
-    - kops_deploy is defined

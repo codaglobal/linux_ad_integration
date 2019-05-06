@@ -2,8 +2,8 @@
 # vars file for linux_ad_integration
 # unjoin: true
 
-# snaps for kops deployment tools
-kops_deploy: true
+# Handle local Ansible installation
+ansible_install: true
 
 # LDAP Servers in order of precedence
 ldap_server:

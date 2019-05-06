@@ -21,5 +21,13 @@
       debug:
         var: hostvars[inventory_hostname]
         verbosity: 0
+    - name: Install kops deployment tools with snap
+      become_user: root
+      vars:
+        kopsnaps:
+          - kubectl
+          - helm
+      shell: snap install "{{ item }}" --classic
+      loop: "{{ kopsnaps }}"
   roles:
     - { role: "{{ playbook_dir }}/.." }

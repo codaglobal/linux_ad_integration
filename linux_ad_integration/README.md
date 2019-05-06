@@ -91,13 +91,13 @@ Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"
 
 Use when: Replacing the server with a new one.
 
-####kops_deploy
+####ansible_install
 
-__Optional:__ a boolean variable for adding kubectl and helm clients to the server. Set in vars/main.yml or as --extra-vars "kops_deploy=true"
+__Optional:__ a boolean variable for adjust the Ansible install on the server. Set in vars/main.yml or as --extra-vars "ansible_install=true"
 
-Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "kops_deploy=true"```
+Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "ansible_install=true"```
 
-Use when: This server will access and/or manage Kubernetes clusters.
+Use when: Needed to change global roles path to /etc/ansible/roles
 
 ##Dependencies
 
