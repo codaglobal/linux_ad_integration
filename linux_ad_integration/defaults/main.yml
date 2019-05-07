@@ -12,6 +12,15 @@ access_groups:
   - CODA Dev Admins
 sudo_group: "vpn-prd"
 
+# Unjoin the Active Directory Domain
+unjoin: false
+
+# Kill and reset SSH after joining Active Directory
+ssh_reset: true
+
+# Handle local Ansible installation
+ansible_install: false
+
 # LDAP Servers in order of precedence
 ldap_server:
   - host: "caldc03"

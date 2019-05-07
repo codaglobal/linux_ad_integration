@@ -28,7 +28,7 @@
   become_user: root
   lineinfile:
     dest: /etc/ansible/ansible.cfg
-    backup: True
+    backup: false
     regexp: '# roles_path    = /etc/ansible/roles'
     line: 'roles_path    = /etc/ansible/roles'
     state: present

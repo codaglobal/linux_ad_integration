@@ -83,21 +83,40 @@ netplan_ec2: AWS internal lookup. Defaults are:
 
 ###Optional Variables
 
+The following boolean variables are set in defaults/main.yml, overridden by vars/main.yml or via the --extra-vars option on the Ansible command line.
+
 ####unjoin
 
-__Optional:__ a boolean variable for unjoining the active directory. Set in vars/main.yml or as --extra-vars "unjoin=true"
+__Optional:__ Use this variable to unjoin a server from the Active Directory.
+
+**Default:** false
 
 Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"```
 
-Use when: Replacing the server with a new one.
+Use when: Replacing or taking down the server.
 
 ####ansible_install
 
-__Optional:__ a boolean variable for adjust the Ansible install on the server. Set in vars/main.yml or as --extra-vars "ansible_install=true"
+__Optional:__ Use to install Ansible on the target server with preferred settings
+
+**Default:** false
 
 Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "ansible_install=true"```
 
 Use when: Needed to change global roles path to /etc/ansible/roles
+
+Modify in tasks/ansible-install.yml
+
+####ssh_reset
+
+__Optional:__ When joining the Active Directory, SSH is restarted, and this usually interferes with remote Ansible connections. Use the ssh_reset logic to ensure that SSH restarts gracefully on the Ansible source, and that the session to the Ansible target is not lost.
+
+**Default:** true
+
+Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"```
+
+Use when: Running this role on a remote server.
+Set to false when: Running this role locally, especially while connected to a server via SSH.
 
 ##Dependencies
 

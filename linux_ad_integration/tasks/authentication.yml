@@ -19,7 +19,7 @@
     line: 'PasswordAuthentication no'
     state: present
   when:
-    - unjoin is defined
+    - unjoin
   notify:
     - restart ssh
 
@@ -55,10 +55,11 @@
     owner: root
     mode: 0644
 
-- name: Kill SSH
+- name: Reset Local SSH
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
   async: 3
   poll: 2
+  when: ssh_reset
 
 - name: Disable SSH common-account
   become: True
@@ -77,6 +78,8 @@
     regexp: '^# Members of the admin group may gain root privileges$'
     replace: '# Members of the admin group may gain root privileges\n%{{ sudo_group }} ALL=(ALL) ALL\n"%domain admins" ALL=(ALL) ALL'
     backup: yes
+  when:
+    - not unjoin
 
 - name: "Remove sudo access from {{ sudo_group }}"
   become: True
@@ -87,4 +90,4 @@
     line: "%{{ sudo_group }} ALL=(ALL) ALL"
     state: absent
   when:
-    - unjoin is defined
+    - unjoin
