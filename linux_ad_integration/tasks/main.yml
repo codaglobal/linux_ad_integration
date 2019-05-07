@@ -1,6 +1,7 @@
 ---
 - name: Apt upgrade, then install all required packages
   import_tasks: pkg-install.yml
+  when: pkg_update
 
 - name: Adjust Ansible installation on server
   import_tasks: ansible-install.yml

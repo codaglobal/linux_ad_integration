@@ -12,6 +12,9 @@ access_groups:
   - CODA Dev Admins
 sudo_group: "vpn-prd"
 
+# Update Linux packages
+pkg_update: true
+
 # Unjoin the Active Directory Domain
 unjoin: false
 

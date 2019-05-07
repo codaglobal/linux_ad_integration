@@ -1,16 +1,20 @@
-#Linux Active Directory Integration
+Linux Active Directory Integration
+==================================
 
 This role automates the integration of a standalone Ubuntu server into any Active Directory. It adds passthrough authentication to SSH, based on Active Directory user groups, and creates Linux user accounts for all users. The role uses Samba, Winbind, and PAM to join and authenticate users against Kerberos
 
-##Requirements
+Requirements
+------------
 
 Ansible dynamic inventory plugins are required as described in https://docs.ansible.com/ansible/latest/user_guide/intro_dynamic_inventory.html. Specifically, the test playbook in this role depends on AWS EC2 dynamic inventory. This playbook looks for its host based on AWS tags.
 
-##Role Defaults and Variables
+Role Defaults and Variables
+---------------------------
 
 These required variables are currently in use by the role:
 
-###Global Variables
+Global Variables
+----------------
 
 These required variables describe the Active Directory where the host will become a member.
 
@@ -33,7 +37,8 @@ access_groups: List of groups that should be allowed to log into the server. Mul
 
 sudo_group: One group that should be allowed sudo access to the server.
 
-###LDAP Server(s)
+LDAP Server(s)
+--------------
 
 Hostname(s) of one or more Active Directory LDAP servers. The LDAP server supports Active Directory lookup services. Multiple entries supported. 1 entry is required.
 
@@ -42,7 +47,8 @@ ldap_server:
   server_ip: "ip address"     # Default: "10.100.0.200"
   domain: "domain name"       # Default: "{{ ldap_domain }}"
 
-###PDC Server(s)
+PDC Server(s)
+-------------
 
 Hostname of the Active Directory Primary Domain Controller(s). Multiple entries supported. 1 entry is required, multiple supported in a dictionary list. Each server must be accessible and able to join a host to the Active Directory.
 
@@ -53,7 +59,8 @@ Hostname of the Active Directory Primary Domain Controller(s). Multiple entries 
     domain: "ip address2"      # Default: "{{ ldap_domain }}"
     server_ip: "12.34.5.68"    # Default: "10.100.10.200"
 
-###KERBEROS SETTINGS
+KERBEROS SETTINGS
+-----------------
 
 Information required to authenticate with Kerberos.
 
@@ -67,7 +74,9 @@ kerberos_server:
     domain: "ip address"      # Default: "{{ ldap_domain }}"
     server_ip: "domain name"  # Default: "{{ pdc.0.server_ip }}"
 
-###NETWORKING VARIABLES
+NETWORKING VARIABLES
+--------------------
+
 This role uses Netplan to add layers of configuration onto an existing Ubuntu network stack. For the most part, these may be left at their defaults. But they are exposed for configuration by advanced users.
 
 netplan_interface: Ethernet adapter to be configured
@@ -81,25 +90,26 @@ netplan_ec2: AWS internal lookup. Defaults are:
   - domain: "ec2.internal"
     server_ip: "127.0.0.53"
 
-###Optional Variables
+Optional Variables
+------------------
 
 The following boolean variables are set in defaults/main.yml, overridden by vars/main.yml or via the --extra-vars option on the Ansible command line.
 
-####unjoin
+**unjoin**
 
 __Optional:__ Use this variable to unjoin a server from the Active Directory.
 
-**Default:** false
+*Default:* false
 
 Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"```
 
 Use when: Replacing or taking down the server.
 
-####ansible_install
+**ansible_install**
 
 __Optional:__ Use to install Ansible on the target server with preferred settings
 
-**Default:** false
+*Default:* false
 
 Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "ansible_install=true"```
 
@@ -107,22 +117,35 @@ Use when: Needed to change global roles path to /etc/ansible/roles
 
 Modify in tasks/ansible-install.yml
 
-####ssh_reset
+**ssh_reset**
 
 __Optional:__ When joining the Active Directory, SSH is restarted, and this usually interferes with remote Ansible connections. Use the ssh_reset logic to ensure that SSH restarts gracefully on the Ansible source, and that the session to the Ansible target is not lost.
 
-**Default:** true
+*Default:* true
 
 Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "unjoin=true"```
 
 Use when: Running this role on a remote server.
 Set to false when: Running this role locally, especially while connected to a server via SSH.
 
-##Dependencies
+**pkg_update**
+
+__Optional:__ For use on new Ubutu hosts. Updates and installs all packages needed to join the Active Directory. Can be turned off if not needed.
+
+*Default:* true
+
+Example: ```AWS_PROFILE=ehe ansible-playbook test.yml --extra-vars "pkg_update=false"```
+
+Use whenever possible. Disable in case of no internet access.
+
+Dependencies
+------------
 
 Currently, this role will only work with Ubuntu.
 
-##Example Playbook
+Example Playbook
+----------------
+
 ```
 - hosts: "192.168.0.1"
   become: True
