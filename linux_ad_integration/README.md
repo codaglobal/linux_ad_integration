@@ -30,12 +30,12 @@ rfc_version: LDAP RFC version (rfc2307 or rfc2303bis)
     Default: "rfc2307"
 ldap_domain: Domain suffix of the Active Directory LDAP server.
     Default: "ehe.exechealthgroup.com"
-access_groups: List of groups that should be allowed to log into the server. Multiple groups supported, 1 is required.
+ssh_access_groups: List of groups that should be allowed to log into the server. Multiple groups supported, 1 is required.
     Defaults:
       - vpn-prd
       - Coda Dev Admins
 
-sudo_group: One group that should be allowed sudo access to the server.
+sudo_access: Users and groups that should be added to the sudoers file.
 
 LDAP Server(s)
 --------------

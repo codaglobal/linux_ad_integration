@@ -7,10 +7,14 @@ ansible_user: "ubuntu"
 netbios: "EHE"
 rfc_version: "rfc2307"
 ldap_domain: "ehe.exechealthgroup.com"
-access_groups:
+ssh_access_groups:
   - vpn-prd
-  - CODA Dev Admins
-sudo_group: "vpn-prd"
+  - vpn-prd-coda
+sudo_access:
+  - "vpn-prd"
+  - "vpn-prd-coda"
+  - "domain admins"
+  - "admin"
 
 # Update Linux packages
 pkg_update: true
