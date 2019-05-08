@@ -10,7 +10,7 @@
     line: '# PasswordAuthentication no'
     state: present
   notify:
-    - restart
+    - restart ssh
   when:
     - not unjoin
 
