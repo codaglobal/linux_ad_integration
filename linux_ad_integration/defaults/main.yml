@@ -1,6 +1,6 @@
 ---
 # Global
-hostname: "bastion"
+hostname: "linux_gateway"
 admin_user: "join"
 admin_password: "{{ admin_password }}"
 ansible_user: "ubuntu"
@@ -30,24 +30,15 @@ ansible_install: false
 
 # LDAP Servers in order of precedence
 ldap_server:
-  - host: "caldc03"
-    server_ip: "192.168.10.200"
+  - host: "mgmtdc01"
     domain: "{{ ldap_domain }}"
-  - host: "caldc02"
-    server_ip: "192.168.10.202"
+    server_ip: "10.100.0.200"
+  - host: "mgmtdc02"
     domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"
 
 # Domain Controllers in order of precedence
 pdc:
-  - host: "ehenydc01"
-    domain: "ehe.exechealthgroup.com"
-    server_ip: "192.168.0.206"
-  - host: "ehenydc02"
-    domain: "{{ ldap_domain }}"
-    server_ip: "192.168.0.208"
-  - host: "ehenydc03"
-    domain: "{{ ldap_domain }}"
-    server_ip: "192.168.0.207"
   - host: "mgmtdc01"
     domain: "{{ ldap_domain }}"
     server_ip: "10.100.0.200"
