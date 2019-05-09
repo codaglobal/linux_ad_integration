@@ -6,8 +6,8 @@
 # Disallow non-root logins when /etc/nologin exists.
 account    required     pam_nologin.so
 account sufficient pam_succeed_if.so user ingroup sudo
-{% if access_groups is defined %}
-{% for access_group in access_groups %}
+{% if ssh_access_groups is defined %}
+{% for access_group in ssh_access_groups %}
 account sufficient pam_succeed_if.so user ingroup [{{ netbios }}\{{ access_group }}]
 {% endfor %}
 {% endif %}

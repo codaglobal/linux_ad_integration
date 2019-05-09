@@ -1,6 +1,11 @@
 ---
 - name: Apt upgrade, then install all required packages
   import_tasks: pkg-install.yml
+  when: pkg_update
+
+- name: Adjust Ansible installation on server
+  import_tasks: ansible-install.yml
+  when: ansible_install
 
 - name: Fill out the /etc/hosts file
   import_tasks: etc-hosts.yml
@@ -13,7 +18,7 @@
 
 - name: Configure Kerberos5
   import_tasks: krb5.yml
-  
+
 - name: Configure Samba
   import_tasks: samba.yml
 

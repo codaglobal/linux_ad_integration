@@ -1,37 +1,44 @@
 ---
 # Global
-hostname: "bastion"
+hostname: "linux_gateway"
 admin_user: "join"
 admin_password: "{{ admin_password }}"
 ansible_user: "ubuntu"
 netbios: "EHE"
 rfc_version: "rfc2307"
 ldap_domain: "ehe.exechealthgroup.com"
-access_groups:
+ssh_access_groups:
   - vpn-prd
-  - CODA Dev Admins
-sudo_group: "vpn-prd"
+  - vpn-prd-coda
+sudo_access:
+  - "vpn-prd"
+  - "vpn-prd-coda"
+  - "domain admins"
+  - "admin"
+
+# Update Linux packages
+pkg_update: true
+
+# Unjoin the Active Directory Domain
+unjoin: false
+
+# Kill and reset SSH after joining Active Directory
+ssh_reset: true
+
+# Handle local Ansible installation
+ansible_install: false
 
 # LDAP Servers in order of precedence
 ldap_server:
-  - host: "caldc03"
-    server_ip: "192.168.10.200"
+  - host: "mgmtdc01"
     domain: "{{ ldap_domain }}"
-  - host: "caldc02"
-    server_ip: "192.168.10.202"
+    server_ip: "10.100.0.200"
+  - host: "mgmtdc02"
     domain: "{{ ldap_domain }}"
+    server_ip: "10.100.16.200"
 
 # Domain Controllers in order of precedence
 pdc:
-  - host: "ehenydc01"
-    domain: "ehe.exechealthgroup.com"
-    server_ip: "192.168.0.206"
-  - host: "ehenydc02"
-    domain: "{{ ldap_domain }}"
-    server_ip: "192.168.0.208"
-  - host: "ehenydc03"
-    domain: "{{ ldap_domain }}"
-    server_ip: "192.168.0.207"
   - host: "mgmtdc01"
     domain: "{{ ldap_domain }}"
     server_ip: "10.100.0.200"

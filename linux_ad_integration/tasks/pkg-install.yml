@@ -8,7 +8,7 @@
     autoremove: yes
     force_apt_get: True
 
-- name: Install all required packages
+- name: Install all required core packages
   become_user: root
   vars:
     newpackages:

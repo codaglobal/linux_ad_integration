@@ -1,7 +1,4 @@
 ---
-# vars file for linux_ad_integration
-# unjoin: true
-
 # LDAP Servers in order of precedence
 ldap_server:
   - host: "mgmtdc01"

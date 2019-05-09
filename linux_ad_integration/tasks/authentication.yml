@@ -1,28 +1,4 @@
 ---
-# In the case of Active Directory Leave
-- name: Enable SSH common-account
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/sshd
-    regexp: '^#.*@include common-account$'
-    line: '@include common-account'
-    state: present
-
-- name: Disable SSH PasswordAuthentication
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    backup: True
-    regexp: '# PasswordAuthentication no'
-    line: 'PasswordAuthentication no'
-    state: present
-  when:
-    - unjoin is defined
-  notify:
-    - restart ssh
-
 # In the case of Active Directory join
 - name: Enable SSH PasswordAuthentication
   become: True
@@ -35,6 +11,8 @@
     state: present
   notify:
     - restart ssh
+  when:
+    - not unjoin
 
 - name: Enable home Directories
   become: True
@@ -55,10 +33,11 @@
     owner: root
     mode: 0644
 
-- name: Kill SSH
+- name: Reset Local SSH
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
   async: 3
   poll: 2
+  when: ssh_reset
 
 - name: Disable SSH common-account
   become: True
@@ -69,22 +48,56 @@
     line: '# @include common-account'
     state: present
 
-- name: "Grant sudo access to {{ sudo_group }}"
-  become: True
-  become_user: root
-  replace:
-    path: /etc/sudoers
-    regexp: '^# Members of the admin group may gain root privileges$'
-    replace: '# Members of the admin group may gain root privileges\n%{{ sudo_group }} ALL=(ALL) ALL\n"%domain admins" ALL=(ALL) ALL'
-    backup: yes
-
-- name: "Remove sudo access from {{ sudo_group }}"
+- name: "Grant access to sudo groups"
   become: True
   become_user: root
   lineinfile:
     dest: /etc/sudoers
-    backup: True
-    line: "%{{ sudo_group }} ALL=(ALL) ALL"
-    state: absent
+    line: '"%{{ item }}" ALL=(ALL) ALL'
+    insertafter: '# Members of the admin group may gain root privileges'
+    backup: yes
+    state: present
+  with_items:
+    - "{{ sudo_access }}"
   when:
-    - unjoin is defined
+    - not unjoin
+
+# In the case of Active Directory Leave
+- name: Enable SSH common-account
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^#.*@include common-account$'
+    line: '@include common-account'
+    state: present
+  when:
+    - unjoin
+
+- name: Disable SSH PasswordAuthentication
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    backup: True
+    regexp: '# PasswordAuthentication no'
+    line: 'PasswordAuthentication no'
+    state: present
+  when:
+    - unjoin
+  notify:
+    - restart ssh
+
+- name: "Restore sudo access to original state"
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/sudoers
+    line: '"%{{ item }}" ALL=(ALL) ALL'
+    insertafter: '# Members of the admin group may gain root privileges'
+    backup: yes
+    state: absent
+  with_items:
+    - "{{ sudo_access }}"
+  when:
+    - unjoin

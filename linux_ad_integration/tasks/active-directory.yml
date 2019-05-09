@@ -37,7 +37,7 @@
   become_user: root
   command: net ads join -k
   when:
-    - unjoin is not defined
+    - not unjoin
     - membership_check is failed
   notify:
     - restart smbd
@@ -50,5 +50,5 @@
   become_user: root
   command: net ads leave -k
   when:
-    - unjoin is defined
+    - unjoin
     - membership_check is successful
