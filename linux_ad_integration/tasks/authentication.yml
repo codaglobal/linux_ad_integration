@@ -1,19 +1,5 @@
 ---
-# In the case of Active Directory join
-- name: Enable SSH PasswordAuthentication
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    backup: True
-    regexp: 'PasswordAuthentication no'
-    line: '# PasswordAuthentication no'
-    state: present
-  notify:
-    - restart ssh
-  when:
-    - not unjoin
-
+# PAM configurations
 - name: Enable home Directories
   become: True
   become_user: root
@@ -33,12 +19,6 @@
     owner: root
     mode: 0644
 
-- name: Reset Local SSH
-  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
-  async: 3
-  poll: 2
-  when: ssh_reset
-
 - name: Disable SSH common-account
   become: True
   become_user: root
@@ -48,21 +28,7 @@
     line: '# @include common-account'
     state: present
 
-- name: "Grant access to sudo groups"
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/sudoers
-    line: '"%{{ item }}" ALL=(ALL) ALL'
-    insertafter: '# Members of the admin group may gain root privileges'
-    backup: yes
-    state: present
-  with_items:
-    - "{{ sudo_access }}"
-  when:
-    - not unjoin
 
-# In the case of Active Directory Leave
 - name: Enable SSH common-account
   become: True
   become_user: root
@@ -73,6 +39,21 @@
     state: present
   when:
     - unjoin
+
+# SSH Configurations
+- name: Enable SSH PasswordAuthentication
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    backup: True
+    regexp: 'PasswordAuthentication no'
+    line: '# PasswordAuthentication no'
+    state: present
+  notify:
+    - restart ssh
+  when:
+    - not unjoin
 
 - name: Disable SSH PasswordAuthentication
   become: True
@@ -88,16 +69,62 @@
   notify:
     - restart ssh
 
-- name: "Restore sudo access to original state"
+- name: Reset Local SSH
+  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
+  async: 3
+  poll: 2
+  when: ssh_reset
+
+# SUDOERS configurations
+
+# - name: "Restore sudo access to original state"
+#   become: True
+#   become_user: root
+#   lineinfile:
+#     dest: /etc/sudoers
+#     line: '"%{{ item }}" ALL=(ALL) ALL'
+#     insertafter: '# Members of the admin group may gain root privileges'
+#     backup: yes
+#     state: absent
+#   with_items:
+#     - "{{ sudo_access }}"
+#   when:
+#     - unjoin
+
+- name: "Remove Sudo Access as well as surrounding markers"
   become: True
   become_user: root
-  lineinfile:
-    dest: /etc/sudoers
-    line: '"%{{ item }}" ALL=(ALL) ALL'
-    insertafter: '# Members of the admin group may gain root privileges'
-    backup: yes
-    state: absent
+  blockinfile:
+    path: /etc/sudoers
+    marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+    content: ""
+  when:
+    - unjoin
+
+# - name: "Grant access to sudo groups"
+#   become: True
+#   become_user: root
+#   lineinfile:
+#     dest: /etc/sudoers
+#     line: '"%{{ item }}" ALL=(ALL) ALL'
+#     insertafter: '# Members of the admin group may gain root privileges'
+#     backup: yes
+#     state: present
+#   with_items:
+#     - "{{ sudo_access }}"
+#   when:
+#     - not unjoin
+
+- name: "Grant access to sudo groups"
+  become: True
+  become_user: root
+  blockinfile:
+    path: /etc/sudoers
+    block: |
+      "%{{ item }}" ALL=(ALL) ALL
+    marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+    insertafter: "# Members of the admin group may gain root privileges"
   with_items:
     - "{{ sudo_access }}"
   when:
-    - unjoin
+    - not unjoin
