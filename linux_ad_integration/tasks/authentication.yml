@@ -121,10 +121,10 @@
   blockinfile:
     path: /etc/sudoers
     block: |
-      "%{{ item }}" ALL=(ALL) ALL
+      "{{ item }}"
     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
     insertafter: "# Members of the admin group may gain root privileges"
   with_items:
-    - "{{ sudo_access }}"
+    - "%{{ sudo_access }}" ALL=(ALL) ALL"
   when:
     - not unjoin
