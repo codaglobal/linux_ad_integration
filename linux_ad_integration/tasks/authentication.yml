@@ -41,6 +41,15 @@
     - unjoin
 
 # SSH Configurations
+- name: Add SSH banner
+  become: True
+  become_user: root
+  template:
+    src: ssh-banner.j2
+    dest: /etc/ssh/ehe-ssh-banner
+    owner: root
+    mode: 0644
+
 - name: Enable SSH PasswordAuthentication
   become: True
   become_user: root
@@ -82,14 +91,14 @@
   become_user: root
   template:
     src: sudoers.d.j2
-    dest: /etc/sudoers.d/100-{{ company }}-sudoers
+    dest: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
     owner: root
     mode: 0440
     validate: 'visudo -cf %s'
 
-- name: Remove access from "{{ company }}" sudoers groups
+- name: Remove access from "{{ netbios }}" sudoers groups
   file:
-    path: /etc/sudoers.d/100-{{ company }}-sudoers
+    path: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
     state: absent
   when: unjoin
 

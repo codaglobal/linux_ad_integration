@@ -1,6 +1,6 @@
-# User rules for EHE
+# User rules for " {{ netbios }} "
 {% if sudo_access is defined %}
-{% for group in sudo %}
-{{ group }} ALL=(ALL) ALL
+{% for group in sudo_access %}
+"%{{ group }}" ALL=(ALL) ALL
 {% endfor %}
 {% endif %}
