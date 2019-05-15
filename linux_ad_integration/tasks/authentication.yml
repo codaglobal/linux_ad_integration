@@ -77,6 +77,22 @@
 
 # SUDOERS configurations
 
+- name: Add access groups to sudoers.d
+  become: True
+  become_user: root
+  template:
+    src: sudoers.d.j2
+    dest: /etc/sudoers.d/100-{{ company }}-sudoers
+    owner: root
+    mode: 0440
+    validate: 'visudo -cf %s'
+
+- name: Remove access from "{{ company }}" sudoers groups
+  file:
+    path: /etc/sudoers.d/100-{{ company }}-sudoers
+    state: absent
+  when: unjoin
+
 # - name: "Restore sudo access to original state"
 #   become: True
 #   become_user: root
@@ -90,16 +106,16 @@
 #     - "{{ sudo_access }}"
 #   when:
 #     - unjoin
-
-- name: "Remove Sudo Access as well as surrounding markers"
-  become: True
-  become_user: root
-  blockinfile:
-    path: /etc/sudoers
-    marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
-    content: ""
-  when:
-    - unjoin
+#
+# - name: "Remove Sudo Access as well as surrounding markers"
+#   become: True
+#   become_user: root
+#   blockinfile:
+#     path: /etc/sudoers
+#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+#     content: ""
+#   when:
+#     - unjoin
 
 # - name: "Grant access to sudo groups"
 #   become: True
@@ -114,17 +130,17 @@
 #     - "{{ sudo_access }}"
 #   when:
 #     - not unjoin
-
-- name: "Grant access to sudo groups"
-  become: True
-  become_user: root
-  blockinfile:
-    path: /etc/sudoers
-    block: |
-      "{{ item }}"
-    marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
-    insertafter: "# Members of the admin group may gain root privileges"
-  with_items:
-    - "%{{ sudo_access }}" ALL=(ALL) ALL"
-  when:
-    - not unjoin
+#
+# - name: "Grant access to sudo groups"
+#   become: True
+#   become_user: root
+#   blockinfile:
+#     path: /etc/sudoers
+#     block: |
+#       "{{ item }}"
+#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+#     insertafter: "# Members of the admin group may gain root privileges"
+#   with_items:
+#     - "%{{ sudo_access }} ALL=(ALL) ALL"
+#   when:
+#     - not unjoin
