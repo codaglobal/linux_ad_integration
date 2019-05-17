@@ -10,25 +10,6 @@
     state: present
     insertbefore: "# end of pam-auth-update config"
 
-### Consider replacing this with "blockinfile" - it's overkill
-# Disallow non-root logins when /etc/nologin exists.
-# account    required     pam_nologin.so
-# account sufficient pam_succeed_if.so user ingroup sudo
-# {% if ssh_access_groups is defined %}
-# {% for access_group in ssh_access_groups %}
-# account sufficient pam_succeed_if.so user ingroup [{{ netbios }}\{{ access_group }}]
-# {% endfor %}
-# {% endif %}
-
-- name: Append SSH Login Groups
-  become: True
-  become_user: root
-  template:
-    src: pam.d_sshd.j2
-    dest: /etc/pam.d/sshd
-    owner: root
-    mode: 0644
-
 - name: Disable SSH common-account
   become: True
   become_user: root
@@ -37,7 +18,6 @@
     regexp: '^@include common-account$'
     line: '# @include common-account'
     state: present
-
 
 - name: Enable SSH common-account
   become: True
@@ -112,8 +92,8 @@
     state: present
   when:
     - not unjoin
-  # notify:
-  #   - restart ssh
+  notify:
+    - restart ssh
 
 - name: Remove SSH Key Restriction
   become: True
