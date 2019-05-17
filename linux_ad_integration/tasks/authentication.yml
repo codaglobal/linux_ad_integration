@@ -11,6 +11,15 @@
     insertbefore: "# end of pam-auth-update config"
 
 ### Consider replacing this with "blockinfile" - it's overkill
+# Disallow non-root logins when /etc/nologin exists.
+# account    required     pam_nologin.so
+# account sufficient pam_succeed_if.so user ingroup sudo
+# {% if ssh_access_groups is defined %}
+# {% for access_group in ssh_access_groups %}
+# account sufficient pam_succeed_if.so user ingroup [{{ netbios }}\{{ access_group }}]
+# {% endfor %}
+# {% endif %}
+
 - name: Append SSH Login Groups
   become: True
   become_user: root
@@ -94,7 +103,6 @@
       LogLevel INFO
       AllowTcpForwarding     no
       PermitTunnel           no
-      ForceCommand           /bin/bash
       PermitUserEnvironment  no
       Banner /etc/ssh/ehe-ssh-banner
       Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"

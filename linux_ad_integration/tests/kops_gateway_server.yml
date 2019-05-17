@@ -21,6 +21,8 @@
       private: yes
   pre_tasks:
     - name: Install min python if needed
+      become: True
+      become_user: root
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       changed_when: false
     - name: "Display all variables/facts known for {{ hostname }}"
