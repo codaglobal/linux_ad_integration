@@ -5,13 +5,16 @@
   gather_facts: yes
   vars:
     ansible_user: ubuntu
-    hostname: "kops_dev_gw"
+    hostname: "FITDO_680"
     ssh_access_groups:
-      - "CODA Dev Admins"
-      - "CODA Dev Users"
+      - "coda-nonprd-user"
+      - "vpn-nonprd-coda"
     sudo_access:
-      - "CODA Dev Admins"
+      - "coda-nonprd-user"
+      - "vpn-nonprd-coda"
       - "domain admins"
+    ansible_install: true
+    ansible_python_interpreter: "/usr/bin/python3"
   vars_prompt:
     - name: admin_password
       prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
@@ -24,13 +27,7 @@
       debug:
         var: hostvars[inventory_hostname]
         verbosity: 0
-    - name: Install kops deployment tools with snap
-      become_user: root
-      vars:
-        kopsnaps:
-          - kubectl
-          - helm
-      shell: snap install "{{ item }}" --classic
-      loop: "{{ kopsnaps }}"
+    - name: Install Helm
+      raw: curl -L https://git.io/get_helm.sh | bash
   roles:
     - { role: "{{ playbook_dir }}/.." }

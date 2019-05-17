@@ -170,9 +170,9 @@ Example Playbook
     - { role: "linux_ad_integration" }
 ```
 
-**Example Run Command**
+**Example First Run Command**
 ```
-AWS_PROFILE=ehe-dev AWS_REGION=us-east-1 ansible-playbook test.yml --extra-vars "kops_deploy=true"
+AWS_PROFILE=ehe-dev AWS_REGION=us-east-1 ansible-playbook test.yml 'ansible_python_interpreter=/usr/bin/python3'
 ```
 
 ##License

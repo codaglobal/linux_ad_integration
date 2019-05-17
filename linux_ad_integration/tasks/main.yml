@@ -28,5 +28,5 @@
 - name: Active Directory tasks
   import_tasks: active-directory.yml
 
-- name: Update authentication methods
-  import_tasks: authentication.yml
+# - name: Update authentication methods
+#   import_tasks: authentication.yml

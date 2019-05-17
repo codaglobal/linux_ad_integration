@@ -10,6 +10,7 @@
     state: present
     insertbefore: "# end of pam-auth-update config"
 
+### Consider replacing this with "blockinfile" - it's overkill
 - name: Append SSH Login Groups
   become: True
   become_user: root
@@ -78,6 +79,47 @@
   notify:
     - restart ssh
 
+- set_fact:
+    ssh_access_group: "{{ ssh_access_groups | default('[]') }}"
+    sudo_access: "{{ sudo_access | default('[]') }}"
+
+- name: Enforce SSH security requirements
+  become: True
+  become_user: root
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      ClientAliveInterval 300
+      ClientAliveCountMax 0
+      LogLevel INFO
+      AllowTcpForwarding     no
+      PermitTunnel           no
+      ForceCommand           /bin/bash
+      PermitUserEnvironment  no
+      Banner /etc/ssh/ehe-ssh-banner
+      Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"
+        PasswordAuthentication yes
+        PubkeyAuthentication no
+    insertafter: EOF
+    state: present
+  when:
+    - not unjoin
+  # notify:
+  #   - restart ssh
+
+- name: Remove SSH Key Restriction
+  become: True
+  become_user: root
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"
+        PasswordAuthentication yes
+        PubkeyAuthentication no
+    state: absent
+  when:
+    - unjoin
+
 - name: Reset Local SSH
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
   async: 3
@@ -101,6 +143,8 @@
     path: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
     state: absent
   when: unjoin
+
+
 
 # - name: "Restore sudo access to original state"
 #   become: True
