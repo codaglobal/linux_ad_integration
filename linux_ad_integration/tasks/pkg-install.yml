@@ -8,6 +8,17 @@
     autoremove: yes
     force_apt_get: True
 
+- name: Add an Apt signing key for Kubernetes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add the Kubernetes Repository
+  become_user: root
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
 - name: Install all required core packages
   become_user: root
   vars:
@@ -21,5 +32,16 @@
       - krb5-config
       - krb5-locales
       - krb5-user
+      - awscli
+      - kubectl
   apt:
     name: "{{ newpackages }}"
+
+
+
+# To add in Kubernetes kubectl
+# sudo apt-get update && sudo apt-get install -y apt-transport-https
+# curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+# echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+# sudo apt-get update
+# sudo apt-get install -y kubectl

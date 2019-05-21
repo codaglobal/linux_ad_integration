@@ -1,5 +1,45 @@
 ---
-# In the case of Active Directory join
+# PAM configurations
+- name: Enable home Directories
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/common-session
+    regexp: '^session*.*homedir*.*$'
+    line: 'session optional                        pam_mkhomedir.so'
+    state: present
+    insertbefore: "# end of pam-auth-update config"
+
+- name: Disable SSH common-account
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^@include common-account$'
+    line: '# @include common-account'
+    state: present
+
+- name: Enable SSH common-account
+  become: True
+  become_user: root
+  lineinfile:
+    dest: /etc/pam.d/sshd
+    regexp: '^#.*@include common-account$'
+    line: '@include common-account'
+    state: present
+  when:
+    - unjoin
+
+# SSH Configurations
+- name: Add SSH banner
+  become: True
+  become_user: root
+  template:
+    src: ssh-banner.j2
+    dest: /etc/ssh/ehe-ssh-banner
+    owner: root
+    mode: 0644
+
 - name: Enable SSH PasswordAuthentication
   become: True
   become_user: root
@@ -13,66 +53,6 @@
     - restart ssh
   when:
     - not unjoin
-
-- name: Enable home Directories
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/common-session
-    regexp: '^session*.*homedir*.*$'
-    line: 'session optional                        pam_mkhomedir.so'
-    state: present
-    insertbefore: "# end of pam-auth-update config"
-
-- name: Append SSH Login Groups
-  become: True
-  become_user: root
-  template:
-    src: pam.d_sshd.j2
-    dest: /etc/pam.d/sshd
-    owner: root
-    mode: 0644
-
-- name: Reset Local SSH
-  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
-  async: 3
-  poll: 2
-  when: ssh_reset
-
-- name: Disable SSH common-account
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/sshd
-    regexp: '^@include common-account$'
-    line: '# @include common-account'
-    state: present
-
-- name: "Grant access to sudo groups"
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/sudoers
-    line: '"%{{ item }}" ALL=(ALL) ALL'
-    insertafter: '# Members of the admin group may gain root privileges'
-    backup: yes
-    state: present
-  with_items:
-    - "{{ sudo_access }}"
-  when:
-    - not unjoin
-
-# In the case of Active Directory Leave
-- name: Enable SSH common-account
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/sshd
-    regexp: '^#.*@include common-account$'
-    line: '@include common-account'
-    state: present
-  when:
-    - unjoin
 
 - name: Disable SSH PasswordAuthentication
   become: True
@@ -88,16 +68,120 @@
   notify:
     - restart ssh
 
-- name: "Restore sudo access to original state"
+- set_fact:
+    ssh_access_group: "{{ ssh_access_groups | default('[]') }}"
+    sudo_access: "{{ sudo_access | default('[]') }}"
+
+- name: Enforce SSH security requirements
   become: True
   become_user: root
-  lineinfile:
-    dest: /etc/sudoers
-    line: '"%{{ item }}" ALL=(ALL) ALL'
-    insertafter: '# Members of the admin group may gain root privileges'
-    backup: yes
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      ClientAliveInterval 300
+      ClientAliveCountMax 0
+      LogLevel INFO
+      AllowTcpForwarding     no
+      PermitTunnel           no
+      PermitUserEnvironment  no
+      Banner /etc/ssh/ehe-ssh-banner
+      Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"
+        PasswordAuthentication yes
+        PubkeyAuthentication no
+    insertafter: EOF
+    state: present
+  when:
+    - not unjoin
+  notify:
+    - restart ssh
+
+- name: Remove SSH Key Restriction
+  become: True
+  become_user: root
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"
+        PasswordAuthentication yes
+        PubkeyAuthentication no
     state: absent
-  with_items:
-    - "{{ sudo_access }}"
   when:
     - unjoin
+
+- name: Restart Local SSH Session
+  shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
+  async: 3
+  poll: 2
+  when: ssh_reset
+
+# SUDOERS configurations
+
+- name: Add access groups to sudoers.d
+  become: True
+  become_user: root
+  template:
+    src: sudoers.d.j2
+    dest: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
+    owner: root
+    mode: 0440
+    validate: 'visudo -cf %s'
+
+- name: Remove access from "{{ netbios }}" sudoers groups
+  file:
+    path: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
+    state: absent
+  when: unjoin
+
+
+
+# - name: "Restore sudo access to original state"
+#   become: True
+#   become_user: root
+#   lineinfile:
+#     dest: /etc/sudoers
+#     line: '"%{{ item }}" ALL=(ALL) ALL'
+#     insertafter: '# Members of the admin group may gain root privileges'
+#     backup: yes
+#     state: absent
+#   with_items:
+#     - "{{ sudo_access }}"
+#   when:
+#     - unjoin
+#
+# - name: "Remove Sudo Access as well as surrounding markers"
+#   become: True
+#   become_user: root
+#   blockinfile:
+#     path: /etc/sudoers
+#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+#     content: ""
+#   when:
+#     - unjoin
+
+# - name: "Grant access to sudo groups"
+#   become: True
+#   become_user: root
+#   lineinfile:
+#     dest: /etc/sudoers
+#     line: '"%{{ item }}" ALL=(ALL) ALL'
+#     insertafter: '# Members of the admin group may gain root privileges'
+#     backup: yes
+#     state: present
+#   with_items:
+#     - "{{ sudo_access }}"
+#   when:
+#     - not unjoin
+#
+# - name: "Grant access to sudo groups"
+#   become: True
+#   become_user: root
+#   blockinfile:
+#     path: /etc/sudoers
+#     block: |
+#       "{{ item }}"
+#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
+#     insertafter: "# Members of the admin group may gain root privileges"
+#   with_items:
+#     - "%{{ sudo_access }} ALL=(ALL) ALL"
+#   when:
+#     - not unjoin

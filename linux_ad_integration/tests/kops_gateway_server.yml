@@ -1,0 +1,35 @@
+---
+- hosts: "tag_Name_ehe_development_{{ hostname }}"
+  become: True
+  become_user: root
+  gather_facts: yes
+  vars:
+    ansible_user: ubuntu
+    hostname: "FITDO_680"
+    ssh_access_groups:
+      - "coda-nonprd-user"
+      - "vpn-nonprd-coda"
+    sudo_access:
+      - "coda-nonprd-user"
+      - "vpn-nonprd-coda"
+      - "domain admins"
+    ansible_install: true
+    ansible_python_interpreter: "/usr/bin/python3"
+  vars_prompt:
+    - name: admin_password
+      prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
+      private: yes
+  pre_tasks:
+    - name: Install min python if needed
+      become: True
+      become_user: root
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: false
+    - name: "Display all variables/facts known for {{ hostname }}"
+      debug:
+        var: hostvars[inventory_hostname]
+        verbosity: 0
+    - name: Install Helm
+      raw: curl -L https://git.io/get_helm.sh | bash
+  roles:
+    - { role: "{{ playbook_dir }}/.." }
