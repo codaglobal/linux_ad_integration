@@ -55,7 +55,7 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: ""
   when:
-    - unjoin
+    - not unjoin
 
 - name: Restart Local SSH Session
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
