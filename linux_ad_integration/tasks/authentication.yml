@@ -10,26 +10,6 @@
     state: present
     insertbefore: "# end of pam-auth-update config"
 
-- name: Disable SSH common-account
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/sshd
-    regexp: '^@include common-account$'
-    line: '# @include common-account'
-    state: present
-
-- name: Enable SSH common-account
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/pam.d/sshd
-    regexp: '^#.*@include common-account$'
-    line: '@include common-account'
-    state: present
-  when:
-    - unjoin
-
 # SSH Configurations
 - name: Add SSH banner
   become: True
@@ -39,34 +19,6 @@
     dest: /etc/ssh/ehe-ssh-banner
     owner: root
     mode: 0644
-
-- name: Enable SSH PasswordAuthentication
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    backup: True
-    regexp: 'PasswordAuthentication no'
-    line: '# PasswordAuthentication no'
-    state: present
-  notify:
-    - restart ssh
-  when:
-    - not unjoin
-
-- name: Disable SSH PasswordAuthentication
-  become: True
-  become_user: root
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    backup: True
-    regexp: '# PasswordAuthentication no'
-    line: 'PasswordAuthentication no'
-    state: present
-  when:
-    - unjoin
-  notify:
-    - restart ssh
 
 - set_fact:
     ssh_access_group: "{{ ssh_access_groups | default('[]') }}"
@@ -100,13 +52,10 @@
   become_user: root
   blockinfile:
     path: /etc/ssh/sshd_config
-    block: |
-      Match Group "{{ ((ssh_access_groups + sudo_access) | unique) | join(',') }}"
-        PasswordAuthentication yes
-        PubkeyAuthentication no
-    state: absent
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: ""
   when:
-    - unjoin
+    - not unjoin
 
 - name: Restart Local SSH Session
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
@@ -131,57 +80,3 @@
     path: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
     state: absent
   when: unjoin
-
-
-
-# - name: "Restore sudo access to original state"
-#   become: True
-#   become_user: root
-#   lineinfile:
-#     dest: /etc/sudoers
-#     line: '"%{{ item }}" ALL=(ALL) ALL'
-#     insertafter: '# Members of the admin group may gain root privileges'
-#     backup: yes
-#     state: absent
-#   with_items:
-#     - "{{ sudo_access }}"
-#   when:
-#     - unjoin
-#
-# - name: "Remove Sudo Access as well as surrounding markers"
-#   become: True
-#   become_user: root
-#   blockinfile:
-#     path: /etc/sudoers
-#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
-#     content: ""
-#   when:
-#     - unjoin
-
-# - name: "Grant access to sudo groups"
-#   become: True
-#   become_user: root
-#   lineinfile:
-#     dest: /etc/sudoers
-#     line: '"%{{ item }}" ALL=(ALL) ALL'
-#     insertafter: '# Members of the admin group may gain root privileges'
-#     backup: yes
-#     state: present
-#   with_items:
-#     - "{{ sudo_access }}"
-#   when:
-#     - not unjoin
-#
-# - name: "Grant access to sudo groups"
-#   become: True
-#   become_user: root
-#   blockinfile:
-#     path: /etc/sudoers
-#     block: |
-#       "{{ item }}"
-#     marker: "<!-- {mark} MANAGED BY ANSILE ROLE: LINUX AD CONFIGURATION -->"
-#     insertafter: "# Members of the admin group may gain root privileges"
-#   with_items:
-#     - "%{{ sudo_access }} ALL=(ALL) ALL"
-#   when:
-#     - not unjoin
