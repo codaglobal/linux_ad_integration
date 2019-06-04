@@ -23,7 +23,7 @@ pkg_update: true
 unjoin: false
 
 # Kill and reset SSH after joining Active Directory
-ssh_reset: true
+ssh_reset: false
 
 # Handle local Ansible installation
 ansible_install: false
