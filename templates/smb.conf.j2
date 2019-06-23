@@ -10,7 +10,7 @@ idmap config * : backend = tdb
 idmap config *:range = 50000-1000000
 username map: /usr/local/samba/etc/user.map
 
-   template homedir = /home/%D/%U
+   template homedir = /home/%U
    template shell = /bin/bash
    winbind use default domain = true
    winbind offline logon = false

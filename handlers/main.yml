@@ -24,6 +24,7 @@
     name: ssh
     state: restarted
 
-- name: restart netplan
-  shell: |
-    netplan apply
+- name: restart xrdp
+  service:
+    name: xrdp
+    state: restarted

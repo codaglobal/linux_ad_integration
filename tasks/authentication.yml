@@ -10,6 +10,17 @@
     state: present
     insertbefore: "# end of pam-auth-update config"
 
+- name: Append SSH Login Groups
+  become: True
+  become_user: root
+  template:
+    src: pam.d_sshd.j2
+    dest: /etc/pam.d/sshd
+    owner: root
+    mode: 0644
+  when:
+     - not unjoin|bool
+
 # SSH Configurations
 - name: Add SSH banner
   become: True
@@ -43,7 +54,7 @@
     insertafter: EOF
     state: present
   when:
-    - not unjoin
+    - not unjoin|bool
   notify:
     - restart ssh
 
@@ -55,13 +66,13 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: ""
   when:
-    - unjoin
+    - unjoin|bool
 
 - name: Restart Local SSH Session
   shell: sleep 1; pkill -u {{ ansible_ssh_user }} sshd
   async: 3
   poll: 2
-  when: ssh_reset
+  when: ssh_reset|bool
 
 # SUDOERS configurations
 
@@ -74,9 +85,10 @@
     owner: root
     mode: 0440
     validate: 'visudo -cf %s'
+  when: not unjoin|bool
 
 - name: Remove access from "{{ netbios }}" sudoers groups
   file:
     path: "/etc/sudoers.d/100-{{ netbios }}-sudoers"
     state: absent
-  when: unjoin
+  when: unjoin|bool

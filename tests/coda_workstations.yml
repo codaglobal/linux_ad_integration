@@ -1,0 +1,238 @@
+---
+- hosts: coda_workstation
+  become: true
+  become_user: root
+  gather_facts: yes
+  vars:
+    ansible_user: ubuntu
+    ssh_access_groups:
+      - "vpn-coda"
+      - "coda-wks-admin"
+      - "domain admins"
+    sudo_access:
+      - "coda-wks-admin"
+      - "domain admins"
+    ansible_install: true
+    ansible_python_interpreter: "/usr/bin/python3"
+  vars_prompt:
+    - name: admin_password
+      prompt: "Please enter the password for {{ admin_user }}@{{ ldap_domain|upper }}"
+      private: yes
+    - name: hostname
+      prompt: "Please enter the name domain short host name"
+      private: no
+
+  roles:
+    - { role: "{{ playbook_dir }}/.." }
+
+  post_tasks:
+    - name: Add firefox apt key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: A6DCF7707EBC211F
+
+    - name: add firefox repo
+      apt_repository:
+        repo: deb http://ppa.launchpad.net/ubuntu-mozilla-security/ppa/ubuntu bionic main
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      changed_when: false
+
+    - name: Install Additional Packages
+      apt:
+        name: npm,docker.io,nodejs,gradle,maven,eclipse,tree,vim,git,sed,openjdk-8-jdk,lubuntu-desktop,lxsession,lxde,firefox,remmina
+        state: latest
+
+    - name: set JAVA_HOME environment
+      lineinfile:
+        dest: /etc/environment
+        backup: false
+        regexp: '^JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64$'
+        line: 'JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64'
+        state: present
+
+    - name: set JRE_HOME environment
+      lineinfile:
+        dest: /etc/environment
+        backup: false
+        regexp: '^JRE_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre$'
+        line: 'JRE_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre'
+        state: present
+
+    - name: Update Docker Socket
+      file:
+        path: /var/run/docker.sock
+        state: file
+        group: "domain users"
+
+    - name: Download mscode
+      get_url:
+        url: https://update.code.visualstudio.com/1.35.1/linux-deb-x64/stable
+        dest: /tmp/mscode.deb
+        mode: '0755'
+
+    - name: Install mscode
+      apt:
+        deb: /tmp/mscode.deb
+        state: present
+
+    - name: Download atom
+      get_url:
+        url: https://github.com/atom/atom/releases/download/v1.38.1/atom-amd64.deb
+        dest: /tmp/atom.deb
+        mode: '0755'
+
+    - name: Install mscode
+      apt:
+        deb: /tmp/atom.deb
+        state: present
+
+    - name: download google chrome
+      get_url:
+        url: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        dest: /tmp/google_chrome.deb
+        mode: '0755'
+
+    - name: install google chrome
+      apt:
+        deb: /tmp/google_chrome.deb
+        state: present
+
+    #- name: Install Atom Snap
+    #  snap:
+    #    name: atom
+    #    classic: yes
+    #    state: present
+
+    - name: Download helm
+      get_url:
+        url: https://get.helm.sh/helm-v2.11.0-rc.3-linux-amd64.tar.gz
+        dest: /tmp/helm.tar.gz
+        mode: '0755'
+
+    - name: Unarchive a file that is already on the remote machine
+      unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        mode: 0775
+        remote_src: yes
+
+    - name: Move helm to proper location
+      copy:
+        src: /tmp/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: 0775
+        remote_src: yes
+
+    - name: Move tiller to proper location
+      copy:
+        src: /tmp/linux-amd64/tiller
+        dest: /usr/local/bin/tiller
+        mode: 0775
+        remote_src: yes
+
+    - name: Create .xsession file in /etc/skel
+      copy:
+        content: |
+          lxsession -e LXDE -s Lubuntu
+        dest: /etc/skel/.xsession
+        mode: 0775
+
+    - name: Copy XRDP script to /etc
+      copy:
+        src: "{{ playbook_dir }}/Std-Xrdp-Install-0.5.1.sh"
+        dest: /etc/Std-Xrdp-Install-0.5.1.sh
+        mode: 0755
+
+    - name: Execute XRDP script
+      become: true
+      become_user: root
+      command: "/etc/Std-Xrdp-Install-0.5.1.sh -g yes"
+
+    - name: Copy XRDP Configuration
+      copy:
+        content: |
+          [Globals]
+          ini_version=1
+          fork=false
+          port=3389
+          use_vsock=false
+          tcp_nodelay=true
+          tcp_keepalive=true
+          security_layer=negotiate
+          crypt_level=none
+          certificate=
+          key_file=
+          ssl_protocols=TLSv1, TLSv1.1, TLSv1.2
+          autorun=
+          allow_channels=false
+          allow_multimon=true
+          bitmap_cache=true
+          bitmap_compression=true
+          bulk_compression=true
+          max_bpp=32
+          new_cursors=true
+          use_fastpath=both
+
+          blue=009cb5
+          grey=dedede
+          ls_top_window_bg_color=009cb5
+          ls_width=350
+          ls_height=430
+          ls_bg_color=dedede
+          ls_logo_filename=
+          ls_logo_x_pos=55
+          ls_logo_y_pos=50
+          ls_label_x_pos=30
+          ls_label_width=60
+          ls_input_x_pos=110
+          ls_input_width=210
+          ls_input_y_pos=220
+          ls_btn_ok_x_pos=142
+          ls_btn_ok_y_pos=370
+          ls_btn_ok_width=85
+          ls_btn_ok_height=30
+          ls_btn_cancel_x_pos=237
+          ls_btn_cancel_y_pos=370
+          ls_btn_cancel_width=85
+          ls_btn_cancel_height=30
+
+          [Logging]
+          LogFile=xrdp.log
+          LogLevel=DEBUG
+          EnableSyslog=true
+          SyslogLevel=DEBUG
+
+          [Channels]
+          rdpdr=false
+          rdpsnd=false
+          drdynvc=false
+          cliprdr=false
+          rail=false
+          xrdpvr=false
+          tcutils=true
+          FuseMountName=.mounts
+
+          [Xorg]
+          name=Xorg
+          lib=libxup.so
+          username=ask
+          password=ask
+          ip=127.0.0.1
+          port=-1
+          code=20
+        dest: /etc/xrdp/xrdp.ini
+        mode: 0755
+        #notify: restart xrdp
+
+    # - name: Cleanup Installations
+    #   file:
+    #     path: "{{ item }}"
+    #     state: absent
+    #   loop:
+    #     - /tmp/mscode.deb
+    #     - /tmp/linux-amd64
+    #     - /tmp/helm.tar.gz

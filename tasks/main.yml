@@ -1,11 +1,11 @@
 ---
 - name: Apt upgrade, then install all required packages
   import_tasks: pkg-install.yml
-  when: pkg_update
+  when: pkg_update|bool
 
 - name: Adjust Ansible installation on server
   import_tasks: ansible-install.yml
-  when: ansible_install
+  when: ansible_install|bool
 
 - name: Fill out the /etc/hosts file
   import_tasks: etc-hosts.yml

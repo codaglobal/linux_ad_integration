@@ -5,8 +5,8 @@
     name: "*"
     state: latest
     update_cache: yes
-    autoremove: yes
-    force_apt_get: True
+    autoremove: true
+    force_apt_get: true
 
 - name: Add an Apt signing key for Kubernetes
   apt_key:

@@ -1,29 +1,25 @@
 ---
-- name: "Test the network"
-  become: True
-  become_user: root
-  shell: "nslookup {{ ldap_domain }}"
-  register: domain_check
-  ignore_errors: True
-
 - name: "Apply netplan"
   become: True
   become_user: root
   shell: "netplan apply"
   when:
-    - domain_check is failed
+    - netplan_step.changed
 
 - name: "Test for domain membership"
   become: True
   become_user: root
   shell: wbinfo -t
   register: membership_check
+  changed_when: false
   ignore_errors: True
 
 - name: Destroy existing Kerberos Credentials
   become: True
   become_user: root
   command: kdestroy -A
+  when:
+    - (((unjoin|bool) and (membership_check is successful)) or ((not unjoin|bool) and (membership_check is failed)))
 
 - name: Generate a Kerberos Key
   become: True
@@ -31,13 +27,15 @@
   shell: |
     echo -n '{{ admin_password }}' | kinit '{{ admin_user }}'
   no_log: True
+  when:
+    - (((unjoin|bool) and (membership_check is successful)) or ((not unjoin|bool) and (membership_check is failed)))
 
 - name: Join the Active Directory
   become: True
   become_user: root
   command: net ads join -k
   when:
-    - not unjoin
+    - not unjoin|bool
     - membership_check is failed
   notify:
     - restart smbd
@@ -45,10 +43,23 @@
     - restart winbind
     - restart ssh
 
+- name: Update hostname locally
+  hostname:
+    name: "{{ hostname }}"
+  when:
+    - not unjoin|bool
+
 - name: Leave the Active Directory
   become: True
   become_user: root
   command: net ads leave -k
   when:
-    - unjoin
+    - unjoin|bool
     - membership_check is successful
+
+- name: Remove extra netplan rules on unjoin
+  file:
+    path: "/etc/netplan/500-{{ netbios }}-netplan.yaml"
+    state: absent
+  when:
+    - unjoin|bool

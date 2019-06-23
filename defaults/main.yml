@@ -1,6 +1,5 @@
 ---
 # Global
-hostname: "linux_gateway"
 admin_user: "join"
 admin_password: "{{ admin_password }}"
 ansible_user: "ubuntu"
@@ -8,13 +7,12 @@ netbios: "EHE"
 rfc_version: "rfc2307"
 ldap_domain: "ehe.exechealthgroup.com"
 ssh_access_groups:
-  - vpn-prd
-  - vpn-prd-coda
-sudo_access:
-  - "vpn-prd"
-  - "vpn-prd-coda"
+  - "vpn-coda"
+  - "coda-wks-admin"
   - "domain admins"
-  - "admin"
+sudo_access:
+  - "coda-wks-admin"
+  - "domain admins"
 
 # Update Linux packages
 pkg_update: true

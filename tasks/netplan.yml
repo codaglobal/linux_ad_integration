@@ -18,16 +18,9 @@
                     search: [ {% if pdc is defined %}{{ (netplan_ec2 + pdc) | map(attribute='domain') | unique | join(', ') }}{% endif %} ]
                     addresses: [ {% if pdc is defined %}{{ (netplan_ec2 + pdc) | map(attribute='server_ip') | unique | join(', ') }}{% endif %} ]
     mode: 0644
-  notify: restart netplan
+  register: netplan_step
   when:
-    - not unjoin
-
-- name: Remove extra netplan rules on unjoin
-  file:
-    path: "/etc/netplan/500-{{ netbios }}-netplan.yaml"
-    state: absent
-  when:
-    - unjoin
+    - not unjoin|bool
 
 - name: Create a cron job that continuously applies netplan
   become: True
